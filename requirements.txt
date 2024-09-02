@@ -1,4 +1,5 @@
 scapy
 Flask
-Flask-SocketIO
 eventlet
+flask-cors
+PyQt5

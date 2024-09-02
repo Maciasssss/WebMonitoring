@@ -1,14 +1,14 @@
-from flask import render_template
-from web import app, socketio
+from flask import Flask, render_template, jsonify
 
-@app.route('/')
-def index():
-    return render_template('index.html')
+def create_app(sniffer):
+    app = Flask(__name__)
 
-@socketio.on('connect')
-def test_connect():
-    print('Client connected')
+    @app.route('/')
+    def index():
+        return render_template('index.html')
 
-@socketio.on('disconnect')
-def test_disconnect():
-    print('Client disconnected')
+    @app.route('/statistics')
+    def get_statistics():
+        return jsonify(sniffer.get_statistics())
+
+    return app

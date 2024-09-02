@@ -1,41 +1,72 @@
+from datetime import datetime
 from colorama import Fore, Style
-from scapy.all import sniff
+from scapy.all import sniff, IP
 from scapy.utils import wrpcap
 from sniffers.arp_handler import ARPHandler
 from sniffers.icmp_handler import ICMPHandler
 from sniffers.tcp_handler import TCPHandler
 from sniffers.udp_handler import UDPHandler
-from sniffers.http_handler import HTTPHandler       # Nowe
-from sniffers.dns_handler import DNSHandler         # Nowe
-from sniffers.ip_handler import IPHandler           # Nowe
-from sniffers.ipv6_handler import IPv6Handler       # Nowe
+from sniffers.http_handler import HTTPHandler
+from sniffers.dns_handler import DNSHandler
+from sniffers.ip_handler import IPHandler
+from sniffers.ipv6_handler import IPv6Handler
 from detectors.ddos_detector import DDoSDetector
 from detectors.portscan_detector import PortScanDetector
 from detectors.spoofing_detector import SpoofingDetector
 from monitors.bandwidth_monitor import BandwidthMonitor
 from monitors.connection_speed_monitor import ConnectionSpeedMonitor
 from monitors.performance_monitor import PerformanceMonitor
-from web import socketio
+import queue
+
+class SnifferConfig:
+    def __init__(self, interface, verbose, timeout, filter_expr, output, use_db, capture_file):
+        self.handlers = {...}
+        self.interface = interface
+        self.verbose = verbose
+        self.timeout = timeout
+        self.filter_expr = filter_expr
+        self.output = output
+        self.use_db = use_db
+        self.capture_file = capture_file
+        self.total_packets = 0
+        self.echo_request_count = 0
+        self.echo_reply_count = 0
+        self.packets = []
+        self.statistics_queue = queue.Queue()  # Kolejka do przechowywania statystyk
 
 class PacketSniffer:
-    def __init__(self):
+    def __init__(self, config):
+        self.config = config
         self.handlers = {
-            "ARP": ARPHandler(),
-            "ICMP": ICMPHandler(),
-            "TCP": TCPHandler(),
-            "UDP": UDPHandler(),
-            "HTTP": HTTPHandler(),         # Nowe
-            "DNS": DNSHandler(),           # Nowe
-            "IP": IPHandler(),             # Nowe
-            "IPv6": IPv6Handler()          # Nowe
+            "ARP": ARPHandler(self),
+            "ICMP": ICMPHandler(self),
+            "TCP": TCPHandler(self),
+            "UDP": UDPHandler(self),
+            "HTTP": HTTPHandler(self),
+            "DNS": DNSHandler(self),
+            "IP": IPHandler(self),
+            "IPv6": IPv6Handler(self)
         }
-
         self.ddos_detector = DDoSDetector()
         self.portscan_detector = PortScanDetector()
         self.spoofing_detector = SpoofingDetector()
         self.bandwidth_monitor = BandwidthMonitor()
         self.connection_speed_monitor = ConnectionSpeedMonitor()
         self.performance_monitor = PerformanceMonitor()
+        self.capture_file = config.capture_file
+        self.echo_request_count = 0
+        self.echo_reply_count = 0
+        self.arp_count = 0
+        self.tcp_count = 0
+        self.udp_count = 0
+        self.http_count = 0
+        self.dns_count = 0
+        self.ip_count = 0
+        self.ipv6_count = 0
+        self.total_packets = 0
+        self.packets = []
+        self.total_bytes_sent = 0
+        self.total_bytes_received = 0
 
     def handle_packet(self, packet):
         for handler_key, handler in self.handlers.items():
@@ -51,30 +82,36 @@ class PacketSniffer:
         for handler_key, handler in self.handlers.items():
             handler.handle_packet(packet)
         self.start_capture(self.packets)
-        socketio.emit('new_packet', {'data': str(packet.summary())})
+        self.update_statistics()
 
-    def start_sniffing(self, iface=None):
-        sniff(iface=iface, prn=self.handle_packet, store=False)
-    
+    def update_statistics(self):
+        statistics = {
+            'total_packets': self.total_packets,
+            'echo_request_count': self.echo_request_count,
+            'echo_reply_count': self.echo_reply_count,
+            'arp_count': self.arp_count,
+            'tcp_count': self.tcp_count,
+            'udp_count': self.udp_count,
+            'http_count': self.http_count,
+            'dns_count': self.dns_count,
+            'ip_count': self.ip_count,
+            'ipv6_count': self.ipv6_count,
+            'total_bytes_sent': self.total_bytes_sent,
+            'total_bytes_received': self.total_bytes_received,
+        }
+        self.config.statistics_queue.put(statistics)
+
+    def start_sniffing(self):
+        if not self.config.interface:
+            raise ValueError("No valid network interface provided.")
+        sniff(iface=self.config.interface, prn=self.handle_packet, store=False)
+
     def start_capture(self, packets_to_capture):
         if self.capture_file:
             wrpcap(self.capture_file, packets_to_capture)
 
-    def print_statistics(self):
-        print(f"{Fore.YELLOW}\tPacket Sniffing Statistics:{Style.RESET_ALL}")
-        print(f"Total Packets       : {self.total_packets}")
-        print(f"Echo Request Packets: {self.echo_request_count}")
-        print(f"Echo Reply Packets  : {self.echo_reply_count}")
-        print(f"ARP Packets         : {self.arp_count}")
-        print(f"TCP Packets         : {self.tcp_count}")
-        print(f"UDP Packets         : {self.udp_count}")
-        print(f"HTTP Packets        : {self.http_count}")  # Dodaj do handlera HTTP
-        print(f"DNS Packets         : {self.dns_count}")   # Dodaj do handlera DNS
-        print(f"IP Packets          : {self.ip_count}")    # Dodaj do handlera IP
-        print(f"IPv6 Packets        : {self.ipv6_count}")  # Dodaj do handlera IPv6
-        print(f"Total Bytes Sent    : {self.total_bytes_sent} bytes")
-        print(f"Total Bytes Received: {self.total_bytes_received} bytes")
-    
-    def save_packets(self):
-        wrpcap(self.capture_file, self.packets)
-        print(f"Saved {len(self.packets)} packets to {self.capture_file}")
+    def get_statistics(self):
+        # Pobierz najnowsze statystyki z kolejki
+        if not self.config.statistics_queue.empty():
+            return self.config.statistics_queue.get()
+        return {}

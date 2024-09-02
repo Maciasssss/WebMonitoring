@@ -4,6 +4,9 @@ from datetime import datetime
 from colorama import Fore, Style
 
 class IPHandler(PacketHandlerStrategy):
+    def __init__(self, sniffer):
+        self.sniffer = sniffer
+
     def handle_packet(self, packet):
         if packet.haslayer(IP):
             ip_packet = packet.getlayer(IP)
@@ -14,6 +17,7 @@ class IPHandler(PacketHandlerStrategy):
             protocol_str = f"IP (TTL: {ttl})"
 
             self.display_packet_info("IP", src_ip, dst_ip, "N/A", "N/A", "IPv4", ttl, protocol_str, packet_size, "IP Packet", "N/A", "N/A", packet)
+            self.sniffer.ip_count += 1
 
     def display_packet_info(self, protocol, src_ip, dst_ip, src_mac, dst_mac, ip_version, ttl, checksum, packet_size, protocol_str, identifier, sequence, packet):
         timestamp = datetime.fromtimestamp(packet.time).strftime('%Y-%m-%d %H:%M:%S')

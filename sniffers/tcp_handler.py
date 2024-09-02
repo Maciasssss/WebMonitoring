@@ -4,6 +4,9 @@ from datetime import datetime
 from colorama import Fore, Style
 
 class TCPHandler(PacketHandlerStrategy):
+    def __init__(self, sniffer):
+        self.sniffer = sniffer
+        
     def handle_packet(self, packet):
         if packet.haslayer(TCP):
             tcp_packet = packet.getlayer(TCP)
@@ -32,6 +35,7 @@ class TCPHandler(PacketHandlerStrategy):
                 protocol_str += " (ACK)"
 
             self.display_packet_info("TCP", src_ip, dst_ip, src_mac, dst_mac, ip_version, ttl, protocol_str, packet_size, f"TCP {src_port}->{dst_port}", sequence_number, acknowledgment_number, packet)
+            self.sniffer.tcp_count += 1
 
     def display_packet_info(self, protocol, src_ip, dst_ip, src_mac, dst_mac, ip_version, ttl, checksum, packet_size, protocol_str, identifier, sequence, packet):
         timestamp = datetime.fromtimestamp(packet.time).strftime('%Y-%m-%d %H:%M:%S')

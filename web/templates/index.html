@@ -3,12 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <title>Packet Sniffer Dashboard</title>
-    <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
-    <script src="//cdn.socket.io/socket.io-1.2.0.js"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        h1 { text-align: center; }
+        #statistics { margin: 0 auto; width: 50%; text-align: left; }
+    </style>
 </head>
 <body>
     <h1>Packet Sniffer Dashboard</h1>
-    <div id="data"></div>
+    <div id="statistics">
+        <!-- Statystyki zostaną tutaj wstawione przez JavaScript -->
+    </div>
+
+    <script>
+        $(document).ready(function() {
+        function fetchStatistics() {
+            $.get('/statistics', function(stats) {
+                console.log("Received statistics:", stats);
+                if (stats) {
+                    $('#statistics').html(`
+                        <p>Total Packets: ${stats.total_packets}</p>
+                        <p>Echo Request Packets: ${stats.echo_request_count}</p>
+                        <p>Echo Reply Packets: ${stats.echo_reply_count}</p>
+                        <p>ARP Packets: ${stats.arp_count}</p>
+                        <p>TCP Packets: ${stats.tcp_count}</p>
+                        <p>UDP Packets: ${stats.udp_count}</p>
+                        <p>HTTP Packets: ${stats.http_count}</p>
+                        <p>DNS Packets: ${stats.dns_count}</p>
+                        <p>IP Packets: ${stats.ip_count}</p>
+                        <p>IPv6 Packets: ${stats.ipv6_count}</p>
+                        <p>Total Bytes Sent: ${stats.total_bytes_sent} bytes</p>
+                        <p>Total Bytes Received: ${stats.total_bytes_received} bytes</p>
+                    `);
+                } else {
+                    $('#statistics').html(`<p>Brak danych do wyświetlenia.</p>`);
+                }
+            }).fail(function(jqXHR, textStatus, errorThrown) {
+                console.error("Błąd w komunikacji z serwerem:", textStatus, errorThrown);
+                $('#statistics').html(`<p>Błąd w komunikacji z serwerem.</p>`);
+            });
+        }
+
+        // Fetch statistics every 5 seconds
+        fetchStatistics();
+        setInterval(fetchStatistics, 5000);  // Adjust the interval as needed
+    });
+
+    </script>
 </body>
 </html>

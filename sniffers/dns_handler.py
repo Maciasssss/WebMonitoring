@@ -4,6 +4,9 @@ from datetime import datetime
 from colorama import Fore, Style
 
 class DNSHandler(PacketHandlerStrategy):
+    def __init__(self, sniffer):
+        self.sniffer = sniffer
+        
     def handle_packet(self, packet):
         if packet.haslayer(UDP) and packet.haslayer(DNS):
             dns_packet = packet.getlayer(DNS)
@@ -13,8 +16,9 @@ class DNSHandler(PacketHandlerStrategy):
             dst_port = packet[UDP].dport
             packet_size = len(packet)
             protocol_str = "DNS"
-
             self.display_packet_info(protocol_str, src_ip, dst_ip, "N/A", "N/A", "IPv4", "N/A", protocol_str, packet_size, f"DNS {src_port}->{dst_port}", dns_packet.id, "N/A", packet)
+            self.sniffer.dns_count += 1
+
 
     def display_packet_info(self, protocol, src_ip, dst_ip, src_mac, dst_mac, ip_version, ttl, checksum, packet_size, protocol_str, identifier, sequence, packet):
         timestamp = datetime.fromtimestamp(packet.time).strftime('%Y-%m-%d %H:%M:%S')

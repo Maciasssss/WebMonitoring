@@ -4,6 +4,9 @@ from datetime import datetime
 from colorama import Fore, Style
 
 class UDPHandler(PacketHandlerStrategy):
+    def __init__(self, sniffer):
+        self.sniffer = sniffer
+        
     def handle_packet(self, packet):
         if packet.haslayer(UDP):
             udp_packet = packet.getlayer(UDP)
@@ -22,6 +25,7 @@ class UDPHandler(PacketHandlerStrategy):
 
             protocol_str = "UDP"
             self.display_packet_info("UDP", src_ip, dst_ip, src_mac, dst_mac, ip_version, ttl, protocol_str, packet_size, f"UDP {src_port}->{dst_port}", "N/A", "N/A", packet)
+            self.sniffer.udp_count += 1
 
     def display_packet_info(self, protocol, src_ip, dst_ip, src_mac, dst_mac, ip_version, ttl, checksum, packet_size, protocol_str, identifier, sequence, packet):
         timestamp = datetime.fromtimestamp(packet.time).strftime('%Y-%m-%d %H:%M:%S')

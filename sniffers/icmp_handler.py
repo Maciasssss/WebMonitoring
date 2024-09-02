@@ -4,11 +4,8 @@ from datetime import datetime
 from colorama import Fore, Style
 
 class ICMPHandler(PacketHandlerStrategy):
-    def __init__(self):
-        self.echo_request_count = 0
-        self.echo_reply_count = 0
-        self.total_bytes_sent = 0
-        self.total_bytes_received = 0
+    def __init__(self, sniffer):
+        self.sniffer = sniffer
 
     def handle_packet(self, packet):
         if packet.haslayer(ICMP):
@@ -40,7 +37,6 @@ class ICMPHandler(PacketHandlerStrategy):
                 protocol_str = f"ICMP Type {icmp_type}"
 
             self.display_packet_info("ICMP", src_ip, dst_ip, src_mac, dst_mac, ip_version, ttl, protocol_str, packet_size, f"ICMP {protocol_str}", icmp_echo_identifier, icmp_echo_sequence, packet)
-
 
     def display_packet_info(self, protocol, src_ip, dst_ip, src_mac, dst_mac, ip_version, ttl, checksum, packet_size, protocol_str, identifier, sequence, packet):
         timestamp = datetime.fromtimestamp(packet.time).strftime('%Y-%m-%d %H:%M:%S')
