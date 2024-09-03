@@ -15,8 +15,30 @@ class IPv6Handler(PacketHandlerStrategy):
             packet_size = len(packet)
             protocol_str = "IPv6"
 
-            self.display_packet_info("IPv6", src_ip, dst_ip, "N/A", "N/A", "IPv6", "N/A", protocol_str, packet_size, "IPv6 Packet", "N/A", "N/A", packet)
+            self.display_packet_info(
+                "IPv6", src_ip, dst_ip, "N/A", "N/A", "IPv6", "N/A", 
+                "N/A", packet_size, protocol_str, "N/A", "N/A", packet
+            )
             self.sniffer.ipv6_count += 1
+
+            # Add packet information to the sniffer's packet info list
+            packet_info = {
+                "src_ip": src_ip,
+                "dst_ip": dst_ip,
+                "src_mac": "N/A",
+                "dst_mac": "N/A",
+                "ip_version": "IPv6",
+                "ttl": "N/A",
+                "checksum": "N/A",
+                "packet_size": f"{packet_size} bytes",
+                "passing_time": datetime.fromtimestamp(packet.time).strftime('%Y-%m-%d %H:%M:%S'),
+                "protocol": protocol_str,
+                "identifier": "N/A",
+                "sequence": "N/A"
+            }
+            self.sniffer.packets_info.append(packet_info)
+            if len(self.sniffer.packets_info) > 100:
+                self.sniffer.packets_info.pop(0)
 
     def display_packet_info(self, protocol, src_ip, dst_ip, src_mac, dst_mac, ip_version, ttl, checksum, packet_size, protocol_str, identifier, sequence, packet):
         timestamp = datetime.fromtimestamp(packet.time).strftime('%Y-%m-%d %H:%M:%S')

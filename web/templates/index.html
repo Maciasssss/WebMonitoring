@@ -3,53 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <title>Packet Sniffer Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <style>
-        body { font-family: Arial, sans-serif; }
-        h1 { text-align: center; }
-        #statistics { margin: 0 auto; width: 50%; text-align: left; }
-    </style>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
 </head>
 <body>
-    <h1>Packet Sniffer Dashboard</h1>
+    <h1>Configure and Start Packet Sniffer</h1>
+    <form action="/start_sniffer" method="post">
+        <label for="interface">Select Interface:</label>
+        <select name="interface" id="interface">
+            {% for interface in interfaces %}
+                <option value="{{ interface }}">{{ interface }}</option>
+            {% endfor %}
+        </select><br><br>
+
+        <label for="timeout">Timeout (seconds):</label>
+        <input type="number" id="timeout" name="timeout" value="300"><br><br>
+
+        <label for="filter">Filter Expression:</label>
+        <input type="text" id="filter" name="filter" value="tcp or udp or icmp or arp or dns or http or ip or ipv6"><br><br>
+
+        <label for="capture_file">Capture File:</label>
+        <input type="text" id="capture_file" name="capture_file" placeholder="Optional"><br><br>
+
+        <label for="verbose">Verbose:</label>
+        <input type="checkbox" id="verbose" name="verbose"><br><br>
+
+        <input type="submit" value="Start Sniffer">
+    </form>
+
+    <form action="/stop_sniffer" method="post">
+        <input type="submit" value="Stop Sniffer">
+    </form>
+
+    <h2>Sniffer Statistics</h2>
     <div id="statistics">
-        <!-- Statystyki zostaną tutaj wstawione przez JavaScript -->
+        <!-- Statistics will be populated by JavaScript -->
     </div>
 
-    <script>
-        $(document).ready(function() {
-        function fetchStatistics() {
-            $.get('/statistics', function(stats) {
-                console.log("Received statistics:", stats);
-                if (stats) {
-                    $('#statistics').html(`
-                        <p>Total Packets: ${stats.total_packets}</p>
-                        <p>Echo Request Packets: ${stats.echo_request_count}</p>
-                        <p>Echo Reply Packets: ${stats.echo_reply_count}</p>
-                        <p>ARP Packets: ${stats.arp_count}</p>
-                        <p>TCP Packets: ${stats.tcp_count}</p>
-                        <p>UDP Packets: ${stats.udp_count}</p>
-                        <p>HTTP Packets: ${stats.http_count}</p>
-                        <p>DNS Packets: ${stats.dns_count}</p>
-                        <p>IP Packets: ${stats.ip_count}</p>
-                        <p>IPv6 Packets: ${stats.ipv6_count}</p>
-                        <p>Total Bytes Sent: ${stats.total_bytes_sent} bytes</p>
-                        <p>Total Bytes Received: ${stats.total_bytes_received} bytes</p>
-                    `);
-                } else {
-                    $('#statistics').html(`<p>Brak danych do wyświetlenia.</p>`);
-                }
-            }).fail(function(jqXHR, textStatus, errorThrown) {
-                console.error("Błąd w komunikacji z serwerem:", textStatus, errorThrown);
-                $('#statistics').html(`<p>Błąd w komunikacji z serwerem.</p>`);
-            });
-        }
+    <h1>Live Packet Capture</h1>
 
-        // Fetch statistics every 5 seconds
-        fetchStatistics();
-        setInterval(fetchStatistics, 5000);  // Adjust the interval as needed
-    });
+    <!-- Search Input Field -->
+    <input type="text" id="searchInput" placeholder="Search packets..." onkeyup="filterTable()">
 
-    </script>
+    <div id="tableContainer">
+        <table id="packetTable">
+            <thead>
+                <tr>
+                    <th>Source IP</th>
+                    <th>Destination IP</th>
+                    <th>Source MAC</th>
+                    <th>Destination MAC</th>
+                    <th>IP Version</th>
+                    <th>TTL</th>
+                    <th>Checksum</th>
+                    <th>Packet Size</th>
+                    <th>Passing Time</th>
+                    <th>Protocol</th>
+                    <th>Identifier</th>
+                    <th>Sequence</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
 </body>
 </html>

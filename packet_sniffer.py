@@ -1,4 +1,5 @@
 from datetime import datetime
+import threading
 from colorama import Fore, Style
 from scapy.all import sniff, IP
 from scapy.utils import wrpcap
@@ -34,9 +35,11 @@ class SnifferConfig:
         self.packets = []
         self.statistics_queue = queue.Queue()  # Kolejka do przechowywania statystyk
 
+# packet_sniffer.py
 class PacketSniffer:
     def __init__(self, config):
         self.config = config
+        self.packets_info = []  # Initialized here, used by all handlers
         self.handlers = {
             "ARP": ARPHandler(self),
             "ICMP": ICMPHandler(self),
@@ -54,6 +57,7 @@ class PacketSniffer:
         self.connection_speed_monitor = ConnectionSpeedMonitor()
         self.performance_monitor = PerformanceMonitor()
         self.capture_file = config.capture_file
+        self.total_packets = 0
         self.echo_request_count = 0
         self.echo_reply_count = 0
         self.arp_count = 0
@@ -63,26 +67,31 @@ class PacketSniffer:
         self.dns_count = 0
         self.ip_count = 0
         self.ipv6_count = 0
-        self.total_packets = 0
-        self.packets = []
         self.total_bytes_sent = 0
         self.total_bytes_received = 0
+        self.lock = threading.Lock()
+        self.sniffing = True
+        self.packets = {}
 
     def handle_packet(self, packet):
-        for handler_key, handler in self.handlers.items():
-            handler.handle_packet(packet)
-        self.ddos_detector.monitor_traffic(packet)
-        self.portscan_detector.monitor_traffic(packet)
-        self.spoofing_detector.monitor_traffic(packet)
-        self.bandwidth_monitor.monitor_traffic(packet)
-        self.connection_speed_monitor.monitor_traffic(packet)
-        self.performance_monitor.monitor_traffic(packet)
-        self.total_packets += 1
-        self.packets.append(packet)
-        for handler_key, handler in self.handlers.items():
-            handler.handle_packet(packet)
-        self.start_capture(self.packets)
-        self.update_statistics()
+        with self.lock:
+            if not self.sniffing:
+                return
+            for handler_key, handler in self.handlers.items():
+                handler.handle_packet(packet)
+            self.ddos_detector.monitor_traffic(packet)
+            self.portscan_detector.monitor_traffic(packet)
+            self.spoofing_detector.monitor_traffic(packet)
+            self.bandwidth_monitor.monitor_traffic(packet)
+            self.connection_speed_monitor.monitor_traffic(packet)
+            self.performance_monitor.monitor_traffic(packet)
+            self.total_packets += 1
+            self.start_capture(self.packets)
+            self.update_statistics()
+
+    def get_recent_packets(self):
+        with self.lock:
+            return self.packets_info[-10:]  # Return the last 10 packets for display
 
     def update_statistics(self):
         statistics = {
@@ -104,14 +113,17 @@ class PacketSniffer:
     def start_sniffing(self):
         if not self.config.interface:
             raise ValueError("No valid network interface provided.")
-        sniff(iface=self.config.interface, prn=self.handle_packet, store=False)
+        self.sniffing = True
+        sniff(iface=self.config.interface, prn=self.handle_packet, filter=self.config.filter_expr, store=False, timeout=self.config.timeout, stop_filter=lambda x: not self.sniffing)
+
+    def stop_sniffing(self):
+        self.sniffing = False
 
     def start_capture(self, packets_to_capture):
         if self.capture_file:
             wrpcap(self.capture_file, packets_to_capture)
 
     def get_statistics(self):
-        # Pobierz najnowsze statystyki z kolejki
         if not self.config.statistics_queue.empty():
             return self.config.statistics_queue.get()
         return {}

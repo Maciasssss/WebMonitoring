@@ -13,12 +13,26 @@ class TCPHandler(PacketHandlerStrategy):
             ip_header = packet.getlayer(IP)
             ether_header = packet.getlayer(Ether)
 
-            src_ip = ip_header.src
-            dst_ip = ip_header.dst
-            ip_version = ip_header.version
-            ttl = ip_header.ttl if ip_header.ttl else "N/A"
-            src_mac = ether_header.src
-            dst_mac = ether_header.dst
+            # Check if the IP layer exists
+            if ip_header:
+                src_ip = ip_header.src
+                dst_ip = ip_header.dst
+                ip_version = ip_header.version
+                ttl = ip_header.ttl if ip_header.ttl else "N/A"
+            else:
+                src_ip = "N/A"
+                dst_ip = "N/A"
+                ip_version = "N/A"
+                ttl = "N/A"
+
+            # Handle cases where the Ether layer might not be present
+            if ether_header:
+                src_mac = ether_header.src
+                dst_mac = ether_header.dst
+            else:
+                src_mac = "N/A"
+                dst_mac = "N/A"
+
             packet_size = len(packet)
             src_port = tcp_packet.sport
             dst_port = tcp_packet.dport
@@ -34,8 +48,30 @@ class TCPHandler(PacketHandlerStrategy):
             elif tcp_flags == 0x10:
                 protocol_str += " (ACK)"
 
-            self.display_packet_info("TCP", src_ip, dst_ip, src_mac, dst_mac, ip_version, ttl, protocol_str, packet_size, f"TCP {src_port}->{dst_port}", sequence_number, acknowledgment_number, packet)
+            self.display_packet_info(
+                "TCP", src_ip, dst_ip, src_mac, dst_mac, ip_version, ttl,
+                "N/A", packet_size, f"TCP {src_port}->{dst_port}", sequence_number, acknowledgment_number, packet
+            )
             self.sniffer.tcp_count += 1
+
+            # Add packet information to the sniffer's packet info list
+            packet_info = {
+                "src_ip": src_ip,
+                "dst_ip": dst_ip,
+                "src_mac": src_mac,
+                "dst_mac": dst_mac,
+                "ip_version": ip_version,
+                "ttl": ttl,
+                "checksum": "N/A",
+                "packet_size": f"{packet_size} bytes",
+                "passing_time": datetime.fromtimestamp(packet.time).strftime('%Y-%m-%d %H:%M:%S'),
+                "protocol": protocol_str,
+                "identifier": sequence_number,
+                "sequence": acknowledgment_number
+            }
+            self.sniffer.packets_info.append(packet_info)
+            if len(self.sniffer.packets_info) > 100:
+                self.sniffer.packets_info.pop(0)
 
     def display_packet_info(self, protocol, src_ip, dst_ip, src_mac, dst_mac, ip_version, ttl, checksum, packet_size, protocol_str, identifier, sequence, packet):
         timestamp = datetime.fromtimestamp(packet.time).strftime('%Y-%m-%d %H:%M:%S')
