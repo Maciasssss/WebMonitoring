@@ -1,3 +1,4 @@
+import socket
 from scapy.all import TCP, IP, Ether
 from .packet_handler_strategy import PacketHandlerStrategy
 from datetime import datetime
@@ -6,7 +7,17 @@ from colorama import Fore, Style
 class TCPHandler(PacketHandlerStrategy):
     def __init__(self, sniffer):
         self.sniffer = sniffer
-        
+
+    def get_interface_ip(self):
+        """Get the local IP address dynamically."""
+        try:
+            hostname = socket.gethostname()
+            interface_ip = socket.gethostbyname(hostname)
+            return interface_ip
+        except Exception as e:
+            print(f"Error retrieving IP for interface: {e}")
+            return None
+
     def handle_packet(self, packet):
         if packet.haslayer(TCP):
             tcp_packet = packet.getlayer(TCP)
@@ -24,6 +35,16 @@ class TCPHandler(PacketHandlerStrategy):
                 dst_ip = "N/A"
                 ip_version = "N/A"
                 ttl = "N/A"
+
+            # Get the interface IP dynamically
+            interface_ip = self.get_interface_ip()
+
+            # If the packet is sent from the machine, consider it "sent bytes"
+            if src_ip == interface_ip:
+                self.sniffer.total_bytes_sent += len(packet)
+            else:
+                # Otherwise, consider it "received bytes"
+                self.sniffer.total_bytes_received += len(packet)
 
             # Handle cases where the Ether layer might not be present
             if ether_header:
@@ -75,7 +96,7 @@ class TCPHandler(PacketHandlerStrategy):
 
     def display_packet_info(self, protocol, src_ip, dst_ip, src_mac, dst_mac, ip_version, ttl, checksum, packet_size, protocol_str, identifier, sequence, packet):
         timestamp = datetime.fromtimestamp(packet.time).strftime('%Y-%m-%d %H:%M:%S')
-        
+
         print(f"{Fore.CYAN}\t{protocol} Packet Detected:{Style.RESET_ALL}")
         print(f"{Fore.GREEN}Source IP      :{Style.RESET_ALL} {src_ip}")
         print(f"{Fore.GREEN}Destination IP :{Style.RESET_ALL} {dst_ip}")
@@ -90,3 +111,4 @@ class TCPHandler(PacketHandlerStrategy):
         print(f"{Fore.GREEN}Identifier     :{Style.RESET_ALL} {identifier}")
         print(f"{Fore.GREEN}Sequence       :{Style.RESET_ALL} {sequence}")
         print("-" * 40)
+        

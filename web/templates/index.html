@@ -13,18 +13,21 @@
         <label for="interface">Select Interface:</label>
         <select name="interface" id="interface">
             {% for interface in interfaces %}
-                <option value="{{ interface }}">{{ interface }}</option>
+                <option value="{{ interface.name }}">{{ interface.name }} ({{ interface.ip }})</option>
             {% endfor %}
         </select><br><br>
 
         <label for="timeout">Timeout (seconds):</label>
         <input type="number" id="timeout" name="timeout" value="300"><br><br>
 
-        <label for="filter">Filter Expression:</label>
-        <input type="text" id="filter" name="filter" value="tcp or udp or icmp or arp or dns or http or ip or ipv6"><br><br>
-
-        <label for="capture_file">Capture File:</label>
-        <input type="text" id="capture_file" name="capture_file" placeholder="Optional"><br><br>
+        <!-- Input for selecting a file location -->
+        <label for="capture_file">Select a File to Save Packets:</label>
+        <input type="file" id="capture_file" name="capture_file" webkitdirectory directory mozdirectory placeholder="Optional"><br><br>
+        <!-- Download Button (Initially hidden) -->
+        <div id="downloadContainer" style="display: none;">
+            <h3>Download Capture File:</h3>
+            <a href="/download_capture" class="button" id="downloadButton">Download File</a>
+        </div>
 
         <label for="verbose">Verbose:</label>
         <input type="checkbox" id="verbose" name="verbose"><br><br>

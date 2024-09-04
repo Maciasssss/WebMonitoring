@@ -1,3 +1,4 @@
+import csv
 from datetime import datetime
 import threading
 from colorama import Fore, Style
@@ -19,13 +20,13 @@ from monitors.connection_speed_monitor import ConnectionSpeedMonitor
 from monitors.performance_monitor import PerformanceMonitor
 import queue
 
+
 class SnifferConfig:
-    def __init__(self, interface, verbose, timeout, filter_expr, output, use_db, capture_file):
+    def __init__(self, interface, verbose, timeout, output, use_db, capture_file):
         self.handlers = {...}
         self.interface = interface
         self.verbose = verbose
         self.timeout = timeout
-        self.filter_expr = filter_expr
         self.output = output
         self.use_db = use_db
         self.capture_file = capture_file
@@ -33,13 +34,13 @@ class SnifferConfig:
         self.echo_request_count = 0
         self.echo_reply_count = 0
         self.packets = []
-        self.statistics_queue = queue.Queue()  # Kolejka do przechowywania statystyk
+        self.statistics_queue = queue.Queue()  
 
 # packet_sniffer.py
 class PacketSniffer:
     def __init__(self, config):
         self.config = config
-        self.packets_info = []  # Initialized here, used by all handlers
+        self.packets_info = [] 
         self.handlers = {
             "ARP": ARPHandler(self),
             "ICMP": ICMPHandler(self),
@@ -86,7 +87,7 @@ class PacketSniffer:
             self.connection_speed_monitor.monitor_traffic(packet)
             self.performance_monitor.monitor_traffic(packet)
             self.total_packets += 1
-            self.start_capture(self.packets)
+            self.start_capture(self.packets_info)
             self.update_statistics()
 
     def get_recent_packets(self):
@@ -114,14 +115,34 @@ class PacketSniffer:
         if not self.config.interface:
             raise ValueError("No valid network interface provided.")
         self.sniffing = True
-        sniff(iface=self.config.interface, prn=self.handle_packet, filter=self.config.filter_expr, store=False, timeout=self.config.timeout, stop_filter=lambda x: not self.sniffing)
+        sniff(iface=self.config.interface, prn=self.handle_packet, store=False, timeout=self.config.timeout, stop_filter=lambda x: not self.sniffing)
 
     def stop_sniffing(self):
         self.sniffing = False
 
     def start_capture(self, packets_to_capture):
-        if self.capture_file:
-            wrpcap(self.capture_file, packets_to_capture)
+        if self.packets_info and self.config.capture_file:
+            with open(self.config.capture_file, 'w', newline='', encoding='utf-8') as csvfile:
+                fieldnames = ["Source IP", "Destination IP", "Source MAC", "Destination MAC", "IP Version", "TTL", "Checksum", "Packet Size", "Passing Time", "Protocol", "Identifier", "Sequence"]
+                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+
+                writer.writeheader()
+                for packet in packets_to_capture:
+                    writer.writerow({
+                        "Source IP": packet['src_ip'],
+                        "Destination IP": packet['dst_ip'],
+                        "Source MAC": packet['src_mac'],
+                        "Destination MAC": packet['dst_mac'],
+                        "IP Version": packet['ip_version'],
+                        "TTL": packet['ttl'],
+                        "Checksum": packet['checksum'],
+                        "Packet Size": packet['packet_size'],
+                        "Passing Time": packet['passing_time'],
+                        "Protocol": packet['protocol'],
+                        "Identifier": packet['identifier'],
+                        "Sequence": packet['sequence']
+                    })
+
 
     def get_statistics(self):
         if not self.config.statistics_queue.empty():

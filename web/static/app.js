@@ -78,12 +78,27 @@ $(document).ready(function() {
             }
         }
     }
+    
+
+    // Function to display the download button if the capture file is available
+    function checkCaptureStatus() {
+        fetch('/check_capture')
+            .then(response => response.json())
+            .then(data => {
+                if (data.capture_available) {
+                    document.getElementById('downloadContainer').style.display = 'block';
+                }
+            });
+    }
+    // Poll for capture file availability every 5 seconds
+    setInterval(checkCaptureStatus, 5000);
 
     // Fetch statistics every 5 seconds
     fetchStatistics();
-    setInterval(fetchStatistics, 5000);  // Adjust the interval as needed
+    setInterval(fetchStatistics, 1000);  // Adjust the interval as needed
 
     // Fetch packets every second
     fetchPackets();
-    setInterval(fetchPackets, 2000);
+    setInterval(fetchPackets, 1000);
 });
+

@@ -1,4 +1,5 @@
 # udp_handler.py
+import socket
 from scapy.all import UDP, IP, Ether
 from .packet_handler_strategy import PacketHandlerStrategy
 from datetime import datetime
@@ -7,13 +8,23 @@ from colorama import Fore, Style
 class UDPHandler(PacketHandlerStrategy):
     def __init__(self, sniffer):
         self.sniffer = sniffer
-        
+  
+    def get_interface_ip(self):
+        """Get the local IP address dynamically."""
+        try:
+            hostname = socket.gethostname()
+            interface_ip = socket.gethostbyname(hostname)
+            return interface_ip
+        except Exception as e:
+            print(f"Error retrieving IP for interface: {e}")
+            return None
+  
     def handle_packet(self, packet):
         if packet.haslayer(UDP):
             udp_packet = packet.getlayer(UDP)
             ip_header = packet.getlayer(IP)
             ether_header = packet.getlayer(Ether)
-
+          
             if ip_header:
                 src_ip = ip_header.src
                 dst_ip = ip_header.dst
@@ -24,7 +35,17 @@ class UDPHandler(PacketHandlerStrategy):
                 dst_ip = "N/A"
                 ip_version = "N/A"
                 ttl = "N/A"
+              
+              # Get the interface IP dynamically
+            interface_ip = self.get_interface_ip()
 
+            # If the packet is sent from the machine, consider it "sent bytes"
+            if src_ip == interface_ip:
+                self.sniffer.total_bytes_sent += len(packet)
+            else:
+                # Otherwise, consider it "received bytes"
+                self.sniffer.total_bytes_received += len(packet)
+                
             if ether_header:
                 src_mac = ether_header.src
                 dst_mac = ether_header.dst

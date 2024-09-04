@@ -1,18 +1,74 @@
 import logging
 import os
-from flask import jsonify, render_template, request, redirect, url_for
+from flask import jsonify, render_template, request, redirect, send_file, url_for
 from packet_sniffer import PacketSniffer, SnifferConfig
 import threading
 from scapy.all import sniff, get_if_list
+import socket
+from scapy.arch.windows import get_windows_if_list
 
 def configure_routes(app):
     sniffer = None
     sniffer_thread = None
     lock = threading.Lock()
 
+    def get_sniffable_interfaces():
+        """Returns a list of sniffable interfaces with names, GUIDs, and IPs."""
+        sniffable_interfaces = []
+
+        for iface in get_windows_if_list():
+            try:
+                friendly_name = iface['name']
+                guid = iface['guid']
+                ips = iface.get('ips', [])
+                ip_address = None
+
+                # Try to get an IPv4 address
+                for ip in ips:
+                    if '.' in ip:
+                        ip_address = ip
+                        break
+
+                # If no IPv4 address is found, use any IP address (e.g., IPv6)
+                if not ip_address and ips:
+                    ip_address = ips[0]
+
+                # Filter out interfaces without any IP address
+                if ip_address:
+                    sniffable_interfaces.append({
+                        'name': friendly_name,
+                        'guid': guid,
+                        'ip': ip_address
+                    })
+
+            except Exception as e:
+                print(f"Error processing interface {iface}: {e}")
+                continue
+
+        return sniffable_interfaces
+
+
+    def get_friendly_to_guid_mapping():
+        """Returns a dictionary mapping friendly interface names to GUIDs."""
+        friendly_to_guid = {}
+
+        for iface in get_windows_if_list():
+            try:
+                friendly_name = iface['name']
+                guid = iface['guid']
+
+                # Add to the friendly_name to GUID mapping
+                friendly_to_guid[friendly_name] = guid
+
+            except Exception as e:
+                print(f"Error processing interface {iface}: {e}")
+                continue
+
+        return friendly_to_guid
+
     @app.route('/')
     def index():
-        interfaces = get_if_list()
+        interfaces = get_sniffable_interfaces()
         statistics = {}
         if sniffer:
             statistics = sniffer.get_statistics()
@@ -22,23 +78,46 @@ def configure_routes(app):
     def start_sniffer():
         nonlocal sniffer, sniffer_thread
 
-        interface = request.form['interface']
+        # Get the selected interface (friendly name) from the form
+        selected_friendly_name = request.form['interface']
+
+        # Get the mapping of friendly names to GUIDs
+        friendly_to_guid = get_friendly_to_guid_mapping()
+
+        # Convert the selected friendly name to its corresponding GUID
+        if selected_friendly_name in friendly_to_guid:
+            guid = friendly_to_guid[selected_friendly_name]
+            # Format the interface for Npcap
+            interface_guid = f"\\Device\\NPF_{guid}"  # Proper format for Windows
+        else:
+            logging.error(f"Selected interface {selected_friendly_name} not found.")
+            return jsonify({"error": "Selected interface not found"}), 400
+
         verbose = 'verbose' in request.form
         timeout = int(request.form['timeout'])
-        filter_expr = request.form['filter']
+
+        # Handle capture file path
         capture_file = request.form.get('capture_file')
 
-        if capture_file and os.path.exists(capture_file):
-            os.remove(capture_file)  # Remove existing capture file to avoid appending
+        # Ensure the captures directory exists
+        capture_directory = os.path.join(os.getcwd(), "captures")
+        if not os.path.exists(capture_directory):
+            os.makedirs(capture_directory)
+        
+        if capture_file:
+            capture_file_path = os.path.join(capture_directory, capture_file)  # Save to 'captures' directory
+        else:
+            capture_file_path = None  # No file chosen
 
+
+        # Use the GUID for sniffing without filters
         config = SnifferConfig(
-            interface=interface,
+            interface=interface_guid,  # Pass formatted GUID for sniffing
             verbose=verbose,
             timeout=timeout,
-            filter_expr=filter_expr,
             output=None,
             use_db=False,
-            capture_file=capture_file
+            capture_file=capture_file_path
         )
 
         try:
@@ -51,6 +130,22 @@ def configure_routes(app):
 
         return redirect(url_for('index'))
 
+
+    @app.route('/download_capture')
+    def download_capture():
+        # Ensure that the capture file exists
+        if sniffer and sniffer.capture_file and os.path.exists(sniffer.capture_file):
+            return send_file(sniffer.capture_file, as_attachment=True)
+        return jsonify({"error": "No capture file available"}), 404
+    
+    @app.route('/check_capture')
+    def check_capture():
+        """API route to check if the capture file is available for download."""
+        if sniffer and sniffer.capture_file and os.path.exists(sniffer.capture_file):
+            return jsonify({'capture_available': True})
+        return jsonify({'capture_available': False})
+
+    
     @app.route('/stop_sniffer', methods=['POST'])
     def stop_sniffer():
         nonlocal sniffer, sniffer_thread

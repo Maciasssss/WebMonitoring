@@ -12,7 +12,14 @@ class ICMPHandler(PacketHandlerStrategy):
             icmp_packet = packet.getlayer(ICMP)
             ip_header = packet.getlayer(IP)
             ether_header = packet.getlayer(Ether)
-
+            
+            # Check if it's an Echo Request (type 8) or Echo Reply (type 0)
+            if icmp_packet.type == 8:
+                # Echo Request (Ping)
+                self.sniffer.echo_request_count += 1
+            elif icmp_packet.type == 0:
+                # Echo Reply
+                self.sniffer.echo_reply_count += 1
             # Check if the IP layer exists
             if ip_header:
                 src_ip = ip_header.src
