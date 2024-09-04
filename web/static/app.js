@@ -1,4 +1,5 @@
 $(document).ready(function() {
+    const packetTable = $('#packetTable').DataTable();
     function fetchStatistics() {
         $.get('/statistics', function(stats) {
             console.log("Received statistics:", stats);
@@ -30,55 +31,27 @@ $(document).ready(function() {
         fetch('/packets')
             .then(response => response.json())
             .then(data => {
-                const tableBody = document.getElementById('packetTable').getElementsByTagName('tbody')[0];
-                tableBody.innerHTML = '';  // Clear the table
-                // Only keep the last 100 packets
-                const displayData = data.slice(-100);
-                data.forEach(packet => {
-                    const row = tableBody.insertRow();
-                    row.insertCell(0).innerText = packet.src_ip;
-                    row.insertCell(1).innerText = packet.dst_ip;
-                    row.insertCell(2).innerText = packet.src_mac;
-                    row.insertCell(3).innerText = packet.dst_mac;
-                    row.insertCell(4).innerText = packet.ip_version;
-                    row.insertCell(5).innerText = packet.ttl;
-                    row.insertCell(6).innerText = packet.checksum;
-                    row.insertCell(7).innerText = packet.packet_size;
-                    row.insertCell(8).innerText = packet.passing_time;
-                    row.insertCell(9).innerText = packet.protocol;
-                    row.insertCell(10).innerText = packet.identifier;
-                    row.insertCell(11).innerText = packet.sequence;
+                packetTable.clear();  // Clear the table before adding new rows
+
+                // Loop through packets and add them to the table
+                data.slice(-100).forEach(packet => {
+                    packetTable.row.add([
+                        packet.src_ip,
+                        packet.dst_ip,
+                        packet.src_mac,
+                        packet.dst_mac,
+                        packet.ip_version,
+                        packet.ttl,
+                        packet.checksum,
+                        packet.packet_size,
+                        packet.passing_time,
+                        packet.protocol,
+                        packet.identifier,
+                        packet.sequence
+                    ]).draw(false);
                 });
             });
     }
-
-    function filterTable() {
-        const searchInput = document.getElementById('searchInput').value.toLowerCase();
-        const table = document.getElementById('packetTable');
-        const rows = table.getElementsByTagName('tr');
-
-        for (let i = 1; i < rows.length; i++) {  // Start from 1 to skip the header
-            const cells = rows[i].getElementsByTagName('td');
-            let rowContainsQuery = false;
-
-            for (let j = 0; j < cells.length; j++) {
-                if (cells[j]) {
-                    const cellValue = cells[j].innerText.toLowerCase();
-                    if (cellValue.includes(searchInput)) {
-                        rowContainsQuery = true;
-                        break;
-                    }
-                }
-            }
-
-            if (rowContainsQuery) {
-                rows[i].style.display = '';  // Show the row
-            } else {
-                rows[i].style.display = 'none';  // Hide the row
-            }
-        }
-    }
-    
 
     // Function to display the download button if the capture file is available
     function checkCaptureStatus() {
