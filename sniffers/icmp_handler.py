@@ -8,60 +8,35 @@ class ICMPHandler(PacketHandlerStrategy):
         self.sniffer = sniffer
 
     def handle_packet(self, packet):
-        if packet.haslayer(ICMP):
+        if packet.haslayer(ICMP) and packet.haslayer(Ether):
             icmp_packet = packet.getlayer(ICMP)
-            ip_header = packet.getlayer(IP)
+            ip_header = packet.getlayer('IP')
             ether_header = packet.getlayer(Ether)
-            
-            # Check if it's an Echo Request (type 8) or Echo Reply (type 0)
-            if icmp_packet.type == 8:
-                # Echo Request (Ping)
-                self.sniffer.echo_request_count += 1
-            elif icmp_packet.type == 0:
-                # Echo Reply
-                self.sniffer.echo_reply_count += 1
-            # Check if the IP layer exists
-            if ip_header:
-                src_ip = ip_header.src
-                dst_ip = ip_header.dst
-                ip_version = ip_header.version
-                ttl = ip_header.ttl if ip_header.ttl else "N/A"
-            else:
-                src_ip = "N/A"
-                dst_ip = "N/A"
-                ip_version = "N/A"
-                ttl = "N/A"
-
-            # Handle cases where the Ether layer might not be present
-            if ether_header:
-                src_mac = ether_header.src
-                dst_mac = ether_header.dst
-            else:
-                src_mac = "N/A"
-                dst_mac = "N/A"
-            # ICMP specific fields
-            icmp_code = icmp_packet.code  # ICMP code
-            icmp_checksum = icmp_packet.chksum  # ICMP checksum
-            packet_size = len(packet)
-            icmp_type = icmp_packet.type
+                    #ip
+            src_ip               = ip_header.src
+            dst_ip               = ip_header.dst
+            ip_version           = ip_header.version
+            ttl                  = ip_header.ttl if ip_header.ttl else "N/A"
+                    #ethernet
+            src_mac              = ether_header.src
+            dst_mac              = ether_header.dst
+            packet_size          = len(packet)
+                    #icmp
+            icmp_type            = icmp_packet.type
             icmp_echo_identifier = icmp_packet.id
-            icmp_echo_sequence = icmp_packet.seq
+            icmp_echo_sequence   = icmp_packet.seq
+            icmp_checksum        = icmp_packet.chksum
 
             if icmp_type == 8:  # ICMP Echo Request
-                protocol_str = "Echo Request"
-                self.sniffer.echo_request_count += 1
-                self.sniffer.total_bytes_sent += packet_size
+                icmp_type_str = "ICMP Echo Request"
+                self.echo_request_count += 1
+                self.total_bytes_sent += packet_size
             elif icmp_type == 0:  # ICMP Echo Reply
-                protocol_str = "Echo Reply"
-                self.sniffer.echo_reply_count += 1
-                self.sniffer.total_bytes_received += packet_size
-            else:
-                 protocol_str = f"ICMP (Type: {icmp_type}, Code: {icmp_code})"
+                icmp_type_str = "ICMP Echo Reply"
+                self.echo_reply_count += 1
+                self.total_bytes_received += packet_size
 
-            self.display_packet_info(
-                "ICMP", src_ip, dst_ip, src_mac, dst_mac, ip_version, ttl, f"Checksum: {icmp_checksum}", 
-                packet_size, protocol_str, icmp_packet.id, icmp_packet.seq, packet
-            )
+            timestamp = datetime.fromtimestamp(packet.time).strftime('%Y-%m-%d %H:%M:%S')
             self.sniffer.icmp_count += 1
 
             # Add packet info
@@ -73,17 +48,39 @@ class ICMPHandler(PacketHandlerStrategy):
                 "ip_version": ip_version,
                 "ttl": ttl,
                 "icmp_type": icmp_type,
-                "icmp_code": icmp_code,
                 "checksum": icmp_checksum,
                 "packet_size": f"{packet_size} bytes",
                 "passing_time": datetime.fromtimestamp(packet.time).strftime('%Y-%m-%d %H:%M:%S'),
-                "protocol": protocol_str,
+                "protocol": icmp_type_str,
                 "identifier": icmp_packet.id,
                 "sequence": icmp_packet.seq
             }
             self.sniffer.packets_info.append(packet_info)
             if len(self.sniffer.packets_info) > 100:
                 self.sniffer.packets_info.pop(0)
+            if icmp_packet.payload:
+                payload = icmp_packet.payload.load
+                payload_hex = ' '.join(format(byte, '02X') for byte in payload)
+                print(f"{Fore.GREEN}Payload (Hex)  :{Style.RESET_ALL} {payload_hex}")
+
+                try:
+                    payload_content = payload.decode("utf-8")
+                    print(f"{Fore.GREEN}Payload (ASCII):{Style.RESET_ALL} {payload_content}")
+                except UnicodeDecodeError:
+                    payload_content = "Non-UTF-8 Payload"
+                    print(f"{Fore.GREEN}Payload (ASCII):{Style.RESET_ALL} {payload_content}")
+
+            else:
+                payload_hex = "No Payload"
+                payload_content = "No Payload"
+            print("-" * 40)
+
+            if icmp_packet.type == 8:  # ICMP Echo Request
+                self.echo_request_count += 1
+                self.total_bytes_sent += packet_size
+            elif icmp_packet.type == 0:  # ICMP Echo Reply
+                self.echo_reply_count += 1
+                self.total_bytes_received += packet_size
 
     def display_packet_info(self, protocol, src_ip, dst_ip, src_mac, dst_mac, ip_version, ttl, checksum, packet_size, protocol_str, identifier, sequence, packet):
         timestamp = datetime.fromtimestamp(packet.time).strftime('%Y-%m-%d %H:%M:%S')

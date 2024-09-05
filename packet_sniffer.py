@@ -18,7 +18,7 @@ from detectors.portscan_detector import PortScanDetector
 from detectors.spoofing_detector import SpoofingDetector
 from monitors.bandwidth_monitor import BandwidthMonitor
 from monitors.connection_speed_monitor import ConnectionSpeedMonitor
-from monitors.performance_monitor import PerformanceMonitor
+from monitors.performance_monitor import FlowMonitor
 import queue
 
 
@@ -57,7 +57,7 @@ class PacketSniffer:
         self.spoofing_detector = SpoofingDetector()
         self.bandwidth_monitor = BandwidthMonitor()
         self.connection_speed_monitor = ConnectionSpeedMonitor()
-        self.performance_monitor = PerformanceMonitor()
+        self.flow_monitor = FlowMonitor()
         self.capture_file = config.capture_file
         self.total_packets = 0
         self.echo_request_count = 0
@@ -87,12 +87,14 @@ class PacketSniffer:
             self.spoofing_detector.monitor_traffic(packet)
             self.bandwidth_monitor.monitor_traffic(packet)
             self.connection_speed_monitor.monitor_traffic(packet)
-            self.performance_monitor.monitor_traffic(packet)
-            self.total_packets += 1
+            self.flow_monitor.monitor_flow(packet)
             time.sleep(0.5)
+            self.total_packets += 1
             self.start_capture(self.packets_info)
             self.update_statistics()
-
+            
+    def get_flow_statistics(self):
+        return self.flow_monitor.get_flow_stats()
     def get_recent_packets(self):
         with self.lock:
             return self.packets_info[-10:]  # Return the last 10 packets for display

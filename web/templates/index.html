@@ -46,6 +46,31 @@
         <!-- Statistics will be populated by JavaScript -->
     </div>
 
+    <h2>Flow Statistics</h2>
+
+    <!-- IP Filter Input -->
+    <div>
+        <label for="flowIpFilter">Filter by IP Address:</label>
+        <input type="text" id="flowIpFilter" placeholder="Enter IP address to filter">
+    </div>
+
+    <!-- Flow Statistics Table -->
+    <div id="flowStatisticsTableContainer">
+        <table id="flowStatisticsTable" class="display">
+            <thead>
+                <tr>
+                    <th>Flow</th>
+                    <th>Throughput (B/s)</th>
+                    <th>Packet Delay (ms)</th>
+                    <th>Jitter (ms)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Flow stats will be dynamically populated here -->
+            </tbody>
+        </table>
+    </div>
+
     <h1>Live Packet Capture</h1>
  
     <div id="tableContainer">

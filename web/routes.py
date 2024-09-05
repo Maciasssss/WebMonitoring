@@ -172,3 +172,17 @@ def configure_routes(app):
         if sniffer:
             return jsonify(sniffer.packets_info)
         return jsonify([])
+
+    @app.route('/flow_statistics')
+    def get_flow_statistics():
+        ip_filter = request.args.get('ip_filter', '')  # Get the IP filter from the request
+        nonlocal sniffer
+        with lock:
+            if sniffer:
+                flow_stats = sniffer.get_flow_statistics()
+                if ip_filter:  # If an IP filter is provided, filter the stats
+                    filtered_stats = {flow: stats for flow, stats in flow_stats.items() if ip_filter in flow}
+                    return jsonify(filtered_stats)
+                return jsonify(flow_stats)
+        return jsonify({})
+
