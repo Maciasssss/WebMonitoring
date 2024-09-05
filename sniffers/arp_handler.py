@@ -10,24 +10,45 @@ class ARPHandler(PacketHandlerStrategy):
     def handle_packet(self, packet):
         if packet.haslayer(ARP):
             arp_packet = packet.getlayer(ARP)
+            ether_header = packet.getlayer(Ether)
+
+            # ARP specific fields
             src_ip = arp_packet.psrc
             dst_ip = arp_packet.pdst
-            src_mac = packet[Ether].src
-            dst_mac = packet[Ether].dst
+            src_mac = ether_header.src
+            dst_mac = ether_header.dst
+            hw_type = str(arp_packet.hwtype)  # Ensure it's a string for serialization
+            proto_type = str(arp_packet.ptype)  # Convert to string
+            hw_size = str(arp_packet.hwlen)  # Convert to string
+            proto_size = str(arp_packet.plen)  # Convert to string
+            opcode = str(arp_packet.op)  # Convert to string
+            sender_hw_addr = arp_packet.hwsrc  # Sender MAC address
+            target_hw_addr = arp_packet.hwdst  # Target MAC address
+            
+            # Additional packet metadata
             packet_size = len(packet)
             protocol_str = "ARP"
-            self.display_packet_info("ARP", src_ip, dst_ip, src_mac, dst_mac, "N/A", "N/A", "N/A", packet_size, "ARP", "N/A", "N/A", packet)
+            
+            # Display packet information
+            self.display_packet_info(
+                "ARP", src_ip, dst_ip, src_mac, dst_mac, "N/A", "N/A", "N/A", packet_size, 
+                f"ARP Opcode: {opcode}", "N/A", "N/A", packet
+            )
             self.sniffer.arp_count += 1
 
-        # Add packet information to the sniffer's packet info list
+            # Add to packet info
             packet_info = {
                 "src_ip": src_ip,
                 "dst_ip": dst_ip,
-                "src_mac": "N/A",
-                "dst_mac": "N/A",
-                "ip_version": "IPv6",
-                "ttl": "N/A",
-                "checksum": "N/A",
+                "src_mac": src_mac,
+                "dst_mac": dst_mac,
+                "hw_type": hw_type,
+                "proto_type": proto_type,
+                "hw_size": hw_size,
+                "proto_size": proto_size,
+                "opcode": opcode,
+                "sender_hw_addr": sender_hw_addr,
+                "target_hw_addr": target_hw_addr,
                 "packet_size": f"{packet_size} bytes",
                 "passing_time": datetime.fromtimestamp(packet.time).strftime('%Y-%m-%d %H:%M:%S'),
                 "protocol": protocol_str,

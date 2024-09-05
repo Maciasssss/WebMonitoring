@@ -1,3 +1,4 @@
+import re
 from scapy.all import TCP, Raw, IP
 from .packet_handler_strategy import PacketHandlerStrategy
 from datetime import datetime
@@ -10,24 +11,44 @@ class HTTPHandler(PacketHandlerStrategy):
     def handle_packet(self, packet):
         if packet.haslayer(TCP) and packet.haslayer(Raw):
             payload = packet[Raw].load
+            
+            try:
+                # Decode the bytes payload to a string for comparison
+                decoded_payload = payload.decode('utf-8', errors='ignore')  # Ignore any errors in decoding
+            except UnicodeDecodeError:
+                decoded_payload = ""
+
             if packet.haslayer(IP):
                 src_ip = packet[IP].src
                 dst_ip = packet[IP].dst
                 src_port = packet[TCP].sport
                 dst_port = packet[TCP].dport
 
-                # Determine if the packet contains HTTP or HTTPS data
-                if b"HTTP" in payload[:4] or b"GET" in payload[:4] or b"POST" in payload[:4]:
-                    protocol_str = "HTTP"
-                elif b"HTTPS" in payload[:4]:
-                    protocol_str = "HTTPS"
-                else:
-                    protocol_str = "Unknown"
+                # Initialize variables
+                protocol_str = "Unknown HTTP Traffic"
+                http_info = "Unknown HTTP Traffic"
+                http_method = "N/A"
+
+                # Use regex to capture HTTP methods and responses
+                http_method_match = re.match(r"^(GET|POST|PUT|DELETE|HEAD|OPTIONS|PATCH)", decoded_payload)
+                http_response_match = re.match(r"^HTTP\/\d\.\d\s(\d{3})", decoded_payload)
+
+                # Check if the packet is an HTTP request
+                if http_method_match:
+                    http_method = http_method_match.group(0)  # Extract the matched HTTP method
+                    protocol_str = "HTTP Request"
+                    http_info = f"{http_method} {src_port}->{dst_port}"
+                
+                # Check if the packet is an HTTP response
+                elif http_response_match:
+                    status_code = http_response_match.group(1)  # Extract the status code from HTTP response
+                    protocol_str = "HTTP Response"
+                    http_info = f"HTTP/{status_code} {src_port}->{dst_port}"
 
                 packet_size = len(packet)
                 self.display_packet_info(
                     protocol_str, src_ip, dst_ip, "N/A", "N/A", "IPv4", "N/A",
-                    protocol_str, packet_size, f"{protocol_str} {src_port}->{dst_port}", "N/A", "N/A", packet
+                    protocol_str, packet_size, http_info, "N/A", "N/A", packet
                 )
                 self.sniffer.http_count += 1
 
@@ -44,7 +65,8 @@ class HTTPHandler(PacketHandlerStrategy):
                     "passing_time": datetime.fromtimestamp(packet.time).strftime('%Y-%m-%d %H:%M:%S'),
                     "protocol": protocol_str,
                     "identifier": "N/A",
-                    "sequence": "N/A"
+                    "sequence": "N/A",
+                    "HTTP Method": http_method
                 }
                 self.sniffer.packets_info.append(packet_info)
                 if len(self.sniffer.packets_info) > 100:

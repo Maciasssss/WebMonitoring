@@ -9,7 +9,7 @@ class DNSHandler(PacketHandlerStrategy):
         
     def handle_packet(self, packet):
         if packet.haslayer(UDP) and packet.haslayer(DNS):
-            dns_packet = packet.getlayer(DNS)
+            dns_packet = packet[DNS]
             ip_header = packet.getlayer(IP)
             ether_header = packet.getlayer(Ether)
 
@@ -33,16 +33,33 @@ class DNSHandler(PacketHandlerStrategy):
                 src_mac = "N/A"
                 dst_mac = "N/A"
 
+            # DNS specific fields
+            query_name = dns_packet.qd.qname.decode() if dns_packet.qdcount > 0 else "N/A"
+            query_type = dns_packet.qd.qtype if dns_packet.qdcount > 0 else "N/A"
+            response_code = dns_packet.rcode  # Response code (0 = no error)
+            is_response = dns_packet.qr == 1  # Is it a DNS response?
+
+            # DNS Packet details
+            if is_response:
+                protocol_str = "DNS Response"
+                answer_count = dns_packet.ancount
+                dns_info = f"Response: {query_name}, Answers: {answer_count}, Response Code: {response_code}"
+            else:
+                protocol_str = "DNS Request"
+                dns_info = f"Request: {query_name}, Query Type: {query_type}"
+
             # Gathering other packet details
             packet_size = len(packet)
             src_port = packet[UDP].sport
             dst_port = packet[UDP].dport
 
-            protocol_str = "DNS"
-            self.display_packet_info(protocol_str, src_ip, dst_ip, src_mac, dst_mac, ip_version, ttl, protocol_str, packet_size, f"DNS {src_port}->{dst_port}", dns_packet.id, "N/A", packet)
+            self.display_packet_info(
+                protocol_str, src_ip, dst_ip, src_mac, dst_mac, ip_version, ttl, protocol_str, 
+                packet_size, f"DNS {src_port}->{dst_port}", dns_packet.id, "N/A", packet
+            )
             self.sniffer.dns_count += 1
 
-            # Add packet information to the sniffer's packet info list
+            # Add packet info to the list
             packet_info = {
                 "src_ip": src_ip,
                 "dst_ip": dst_ip,
@@ -50,10 +67,13 @@ class DNSHandler(PacketHandlerStrategy):
                 "dst_mac": dst_mac,
                 "ip_version": ip_version,
                 "ttl": ttl,
-                "checksum": protocol_str,
+                "checksum": dns_info,
                 "packet_size": f"{packet_size} bytes",
                 "passing_time": datetime.fromtimestamp(packet.time).strftime('%Y-%m-%d %H:%M:%S'),
                 "protocol": protocol_str,
+                "query_name": query_name,
+                "query_type": query_type,
+                "response_code": response_code,
                 "identifier": dns_packet.id,
                 "sequence": "N/A"
             }

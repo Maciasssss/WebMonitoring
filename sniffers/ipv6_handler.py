@@ -10,14 +10,23 @@ class IPv6Handler(PacketHandlerStrategy):
     def handle_packet(self, packet):
         if packet.haslayer(IPv6):
             ipv6_packet = packet.getlayer(IPv6)
+
+            # IPv6 specific fields
             src_ip = ipv6_packet.src
             dst_ip = ipv6_packet.dst
+            flow_label = ipv6_packet.fl  # Flow label
+            traffic_class = ipv6_packet.tc  # Traffic class
+            hop_limit = ipv6_packet.hlim  # Hop limit
+            next_header = ipv6_packet.nh  # Next header (protocol)
+            
+            # Other metadata
             packet_size = len(packet)
             protocol_str = "IPv6"
 
             self.display_packet_info(
-                "IPv6", src_ip, dst_ip, "N/A", "N/A", "IPv6", "N/A", 
-                "N/A", packet_size, protocol_str, "N/A", "N/A", packet
+                "IPv6", src_ip, dst_ip, "N/A", "N/A", "IPv6", hop_limit, 
+                f"Flow Label: {flow_label}, Traffic Class: {traffic_class}, Next Header: {next_header}", 
+                packet_size, protocol_str, "N/A", "N/A", packet
             )
             self.sniffer.ipv6_count += 1
 
@@ -28,8 +37,10 @@ class IPv6Handler(PacketHandlerStrategy):
                 "src_mac": "N/A",
                 "dst_mac": "N/A",
                 "ip_version": "IPv6",
-                "ttl": "N/A",
-                "checksum": "N/A",
+                "hop_limit": hop_limit,
+                "traffic_class": traffic_class,
+                "flow_label": flow_label,
+                "next_header": next_header,
                 "packet_size": f"{packet_size} bytes",
                 "passing_time": datetime.fromtimestamp(packet.time).strftime('%Y-%m-%d %H:%M:%S'),
                 "protocol": protocol_str,

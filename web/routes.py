@@ -128,7 +128,7 @@ def configure_routes(app):
             logging.error(f"Error starting sniffer: {e}")
             return jsonify({"error": str(e)}), 500
 
-        return redirect(url_for('index'))
+        return jsonify({"status": "sniffer started"})
 
 
     @app.route('/download_capture')

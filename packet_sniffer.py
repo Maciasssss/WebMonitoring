@@ -1,6 +1,7 @@
 import csv
 from datetime import datetime
 import threading
+import time
 from colorama import Fore, Style
 from scapy.all import sniff, IP
 from scapy.utils import wrpcap
@@ -70,6 +71,7 @@ class PacketSniffer:
         self.ipv6_count = 0
         self.total_bytes_sent = 0
         self.total_bytes_received = 0
+        self.icmp_count = 0 
         self.lock = threading.Lock()
         self.sniffing = True
         self.packets = {}
@@ -87,6 +89,7 @@ class PacketSniffer:
             self.connection_speed_monitor.monitor_traffic(packet)
             self.performance_monitor.monitor_traffic(packet)
             self.total_packets += 1
+            time.sleep(0.5)
             self.start_capture(self.packets_info)
             self.update_statistics()
 
@@ -104,6 +107,7 @@ class PacketSniffer:
             'udp_count': self.udp_count,
             'http_count': self.http_count,
             'dns_count': self.dns_count,
+            'icmp_count' : self.icmp_count,
             'ip_count': self.ip_count,
             'ipv6_count': self.ipv6_count,
             'total_bytes_sent': self.total_bytes_sent,
@@ -123,25 +127,42 @@ class PacketSniffer:
     def start_capture(self, packets_to_capture):
         if self.packets_info and self.config.capture_file:
             with open(self.config.capture_file, 'w', newline='', encoding='utf-8') as csvfile:
-                fieldnames = ["Source IP", "Destination IP", "Source MAC", "Destination MAC", "IP Version", "TTL", "Checksum", "Packet Size", "Passing Time", "Protocol", "Identifier", "Sequence"]
+                # Expanded fieldnames for advanced details
+                fieldnames = [
+                    "Source IP", "Destination IP", "Source MAC", "Destination MAC", "IP Version", "TTL",
+                    "Checksum", "Packet Size", "Passing Time", "Protocol", "Identifier", "Sequence",
+                    "ICMP Type", "ICMP Code", "HTTP Method", "Flow Label", "Traffic Class", "Hop Limit",
+                    "Next Header", "Fragment Offset", "Flags"
+                ]
                 writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
                 writer.writeheader()
                 for packet in packets_to_capture:
+                    # Write detailed packet information, using `.get()` to avoid KeyError for non-applicable fields
                     writer.writerow({
-                        "Source IP": packet['src_ip'],
-                        "Destination IP": packet['dst_ip'],
-                        "Source MAC": packet['src_mac'],
-                        "Destination MAC": packet['dst_mac'],
-                        "IP Version": packet['ip_version'],
-                        "TTL": packet['ttl'],
-                        "Checksum": packet['checksum'],
-                        "Packet Size": packet['packet_size'],
-                        "Passing Time": packet['passing_time'],
-                        "Protocol": packet['protocol'],
-                        "Identifier": packet['identifier'],
-                        "Sequence": packet['sequence']
+                        "Source IP": packet.get('src_ip', 'N/A'),
+                        "Destination IP": packet.get('dst_ip', 'N/A'),
+                        "Source MAC": packet.get('src_mac', 'N/A'),
+                        "Destination MAC": packet.get('dst_mac', 'N/A'),
+                        "IP Version": packet.get('ip_version', 'N/A'),
+                        "TTL": packet.get('ttl', 'N/A'),
+                        "Checksum": packet.get('checksum', 'N/A'),
+                        "Packet Size": packet.get('packet_size', 'N/A'),
+                        "Passing Time": packet.get('passing_time', 'N/A'),
+                        "Protocol": packet.get('protocol', 'N/A'),
+                        "Identifier": packet.get('identifier', 'N/A'),
+                        "Sequence": packet.get('sequence', 'N/A'),
+                        "ICMP Type": packet.get('icmp_type', 'N/A'),
+                        "ICMP Code": packet.get('icmp_code', 'N/A'),
+                        "HTTP Method": packet.get('http_method', 'N/A'),
+                        "Flow Label": packet.get('flow_label', 'N/A'),
+                        "Traffic Class": packet.get('traffic_class', 'N/A'),
+                        "Hop Limit": packet.get('hop_limit', 'N/A'),
+                        "Next Header": packet.get('next_header', 'N/A'),
+                        "Fragment Offset": packet.get('fragment_offset', 'N/A'),
+                        "Flags": packet.get('flags', 'N/A')
                     })
+
 
 
     def get_statistics(self):

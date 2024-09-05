@@ -39,7 +39,9 @@ class ICMPHandler(PacketHandlerStrategy):
             else:
                 src_mac = "N/A"
                 dst_mac = "N/A"
-
+            # ICMP specific fields
+            icmp_code = icmp_packet.code  # ICMP code
+            icmp_checksum = icmp_packet.chksum  # ICMP checksum
             packet_size = len(packet)
             icmp_type = icmp_packet.type
             icmp_echo_identifier = icmp_packet.id
@@ -54,11 +56,15 @@ class ICMPHandler(PacketHandlerStrategy):
                 self.sniffer.echo_reply_count += 1
                 self.sniffer.total_bytes_received += packet_size
             else:
-                protocol_str = f"ICMP Type {icmp_type}"
+                 protocol_str = f"ICMP (Type: {icmp_type}, Code: {icmp_code})"
 
-            self.display_packet_info("ICMP", src_ip, dst_ip, src_mac, dst_mac, ip_version, ttl, "ICMP", packet_size, f"ICMP {protocol_str}", icmp_echo_identifier, icmp_echo_sequence, packet)
+            self.display_packet_info(
+                "ICMP", src_ip, dst_ip, src_mac, dst_mac, ip_version, ttl, f"Checksum: {icmp_checksum}", 
+                packet_size, protocol_str, icmp_packet.id, icmp_packet.seq, packet
+            )
+            self.sniffer.icmp_count += 1
 
-            # Add packet information to the sniffer's packet info list
+            # Add packet info
             packet_info = {
                 "src_ip": src_ip,
                 "dst_ip": dst_ip,
@@ -66,12 +72,14 @@ class ICMPHandler(PacketHandlerStrategy):
                 "dst_mac": dst_mac,
                 "ip_version": ip_version,
                 "ttl": ttl,
-                "checksum": "ICMP",
+                "icmp_type": icmp_type,
+                "icmp_code": icmp_code,
+                "checksum": icmp_checksum,
                 "packet_size": f"{packet_size} bytes",
                 "passing_time": datetime.fromtimestamp(packet.time).strftime('%Y-%m-%d %H:%M:%S'),
                 "protocol": protocol_str,
-                "identifier": icmp_echo_identifier,
-                "sequence": icmp_echo_sequence
+                "identifier": icmp_packet.id,
+                "sequence": icmp_packet.seq
             }
             self.sniffer.packets_info.append(packet_info)
             if len(self.sniffer.packets_info) > 100:

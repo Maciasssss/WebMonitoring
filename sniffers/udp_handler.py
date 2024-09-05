@@ -56,12 +56,17 @@ class UDPHandler(PacketHandlerStrategy):
             packet_size = len(packet)
             src_port = udp_packet.sport
             dst_port = udp_packet.dport
+            udp_length = udp_packet.len
 
             protocol_str = "UDP"
-            self.display_packet_info("UDP", src_ip, dst_ip, src_mac, dst_mac, ip_version, ttl, protocol_str, packet_size, f"UDP {src_port}->{dst_port}", "N/A", "N/A", packet)
+            self.display_packet_info(
+                "UDP", src_ip, dst_ip, src_mac, dst_mac, ip_version, ttl,
+                f"UDP Length: {udp_length}", packet_size, f"UDP {src_port}->{dst_port}",
+                "N/A", "N/A", packet
+            )
             self.sniffer.udp_count += 1
 
-            # Add packet information to the sniffer's packet info list
+            # Add packet info
             packet_info = {
                 "src_ip": src_ip,
                 "dst_ip": dst_ip,
@@ -69,7 +74,7 @@ class UDPHandler(PacketHandlerStrategy):
                 "dst_mac": dst_mac,
                 "ip_version": ip_version,
                 "ttl": ttl,
-                "checksum": protocol_str,
+                "checksum": f"UDP Length: {udp_length}",
                 "packet_size": f"{packet_size} bytes",
                 "passing_time": datetime.fromtimestamp(packet.time).strftime('%Y-%m-%d %H:%M:%S'),
                 "protocol": protocol_str,

@@ -59,7 +59,14 @@ class TCPHandler(PacketHandlerStrategy):
             dst_port = tcp_packet.dport
             sequence_number = tcp_packet.seq
             acknowledgment_number = tcp_packet.ack
-            tcp_flags = tcp_packet.flags
+            tcp_flags = str(tcp_packet.flags)  # Serialize TCP flags as string
+            window_size = tcp_packet.window
+            mss_option = None
+
+            # Extract TCP options (e.g., MSS)
+            for option in tcp_packet.options:
+                if option[0] == 'MSS':
+                    mss_option = option[1]
 
             protocol_str = "TCP"
             if tcp_flags == 0x02:
@@ -71,11 +78,12 @@ class TCPHandler(PacketHandlerStrategy):
 
             self.display_packet_info(
                 "TCP", src_ip, dst_ip, src_mac, dst_mac, ip_version, ttl,
-                "N/A", packet_size, f"TCP {src_port}->{dst_port}", sequence_number, acknowledgment_number, packet
+                f"Window Size: {window_size}, MSS: {mss_option}", packet_size, 
+                f"TCP {src_port}->{dst_port}", sequence_number, acknowledgment_number, packet
             )
             self.sniffer.tcp_count += 1
 
-            # Add packet information to the sniffer's packet info list
+            # Add packet info
             packet_info = {
                 "src_ip": src_ip,
                 "dst_ip": dst_ip,
@@ -83,12 +91,15 @@ class TCPHandler(PacketHandlerStrategy):
                 "dst_mac": dst_mac,
                 "ip_version": ip_version,
                 "ttl": ttl,
-                "checksum": "N/A",
+                "checksum": f"Window Size: {window_size}, MSS: {mss_option}",
                 "packet_size": f"{packet_size} bytes",
                 "passing_time": datetime.fromtimestamp(packet.time).strftime('%Y-%m-%d %H:%M:%S'),
                 "protocol": protocol_str,
                 "identifier": sequence_number,
-                "sequence": acknowledgment_number
+                "sequence": acknowledgment_number,
+                "tcp_flags": tcp_flags,
+                "window_size": window_size,
+                "mss_option": mss_option
             }
             self.sniffer.packets_info.append(packet_info)
             if len(self.sniffer.packets_info) > 100:

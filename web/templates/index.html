@@ -11,7 +11,7 @@
 </head>
 <body>
     <h1>Configure and Start Packet Sniffer</h1>
-    <form action="/start_sniffer" method="post">
+    <form id="startCaptureForm" action="/start_sniffer" method="post">
         <label for="interface">Select Interface:</label>
         <select name="interface" id="interface">
             {% for interface in interfaces %}
@@ -34,7 +34,7 @@
             <a href="/download_capture" class="button" id="downloadButton">Download File</a>
         </div>
 
-        <input type="submit" value="Start Sniffer">
+        <input type="submit" id="startCaptureButton" value="Start Sniffer">
     </form>
 
     <form action="/stop_sniffer" method="post">
@@ -69,6 +69,16 @@
             <tbody>
             </tbody>
         </table>
+    </div>
+
+        <!-- Modal for Packet Details -->
+    <div id="packetModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="packetDetails">
+                <!-- Detailed packet information will be displayed here -->
+            </div>
+        </div>
     </div>
 </body>
 </html>

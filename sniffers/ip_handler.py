@@ -10,15 +10,23 @@ class IPHandler(PacketHandlerStrategy):
     def handle_packet(self, packet):
         if packet.haslayer(IP):
             ip_packet = packet.getlayer(IP)
+
+            # IPv4 specific fields
             src_ip = ip_packet.src
             dst_ip = ip_packet.dst
             ttl = ip_packet.ttl if ip_packet.ttl else "N/A"
+            total_length = ip_packet.len  # Total length of the IP packet
+            fragment_offset = ip_packet.frag  # Fragment offset
+            flags = str(ip_packet.flags)  # Fragmentation flags (e.g., 'DF', 'MF')
+
+            # Other metadata
             packet_size = len(packet)
             protocol_str = f"IP (TTL: {ttl})"
 
             self.display_packet_info(
                 "IP", src_ip, dst_ip, "N/A", "N/A", "IPv4", ttl,
-                "N/A", packet_size, protocol_str, "N/A", "N/A", packet
+                f"Total Length: {total_length}, Fragment Offset: {fragment_offset}, Flags: {flags}", 
+                packet_size, protocol_str, "N/A", "N/A", packet
             )
             self.sniffer.ip_count += 1
 
@@ -30,7 +38,9 @@ class IPHandler(PacketHandlerStrategy):
                 "dst_mac": "N/A",
                 "ip_version": "IPv4",
                 "ttl": ttl,
-                "checksum": "N/A",
+                "total_length": total_length,
+                "fragment_offset": fragment_offset,
+                "flags": flags,
                 "packet_size": f"{packet_size} bytes",
                 "passing_time": datetime.fromtimestamp(packet.time).strftime('%Y-%m-%d %H:%M:%S'),
                 "protocol": protocol_str,
