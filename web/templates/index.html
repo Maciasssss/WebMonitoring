@@ -46,13 +46,67 @@
         <!-- Statistics will be populated by JavaScript -->
     </div>
 
+    <h2>Detector Alerts</h2>
+        <div id="alertsContainer" class="alerts-container">
+            <!-- DNS Tunneling Alert -->
+            <div id="dnsTunnelingAlertBox" class="alert-box">
+                <h3>DNS Tunneling Alerts</h3>
+                <ul id="dnsTunnelingAlerts"></ul>
+                <span id="dnsTunnelingFlag" class="flag hidden">&#x1F6A8;</span> <!-- Red Flag Icon -->
+            </div>
+        
+            <!-- Brute Force Alert -->
+            <div id="bruteForceAlertBox" class="alert-box">
+                <h3>Brute Force Alerts</h3>
+                <ul id="bruteForceAlerts"></ul>
+                <span id="bruteForceFlag" class="flag hidden">&#x1F6A8;</span> <!-- Red Flag Icon -->
+            </div>
+        
+            <!-- DDoS Alert -->
+            <div id="ddosAlertBox" class="alert-box">
+                <h3>DDoS Alerts</h3>
+                <ul id="ddosAlerts"></ul>
+                <span id="ddosFlag" class="flag hidden">&#x1F6A8;</span> <!-- Red Flag Icon -->
+            </div>
+        
+            <!-- Port Scan Alert -->
+            <div id="portScanAlertBox" class="alert-box">
+                <h3>Port Scan Alerts</h3>
+                <ul id="portScanAlerts"></ul>
+                <span id="portScanFlag" class="flag hidden">&#x1F6A8;</span> <!-- Red Flag Icon -->
+            </div>
+        
+            <!-- Spoofing Alert -->
+            <div id="spoofingAlertBox" class="alert-box">
+                <h3>Spoofing Alerts</h3>
+                <ul id="spoofingAlerts"></ul>
+                <span id="spoofingFlag" class="flag hidden">&#x1F6A8;</span> <!-- Red Flag Icon -->
+            </div>
+        
+            <!-- Password Exfiltration Alert -->
+            <div id="passwordExfiltrationAlertBox" class="alert-box">
+                <h3>Password Exfiltration Alerts</h3>
+                <ul id="passwordExfiltrationAlerts"></ul>
+                <span id="passwordExfiltrationFlag" class="flag hidden">&#x1F6A8;</span> <!-- Red Flag Icon -->
+            </div>
+        </div>
+    
+
+        
+        <!-- Modal for alert details -->
+        <div id="alertModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <div id="alertDetails">
+                    <!-- Detailed alert information will be displayed here -->
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
     <h2>Flow Statistics</h2>
 
-    <!-- IP Filter Input -->
-    <div>
-        <label for="flowIpFilter">Filter by IP Address:</label>
-        <input type="text" id="flowIpFilter" placeholder="Enter IP address to filter">
-    </div>
 
     <!-- Flow Statistics Table -->
     <div id="flowStatisticsTableContainer">
@@ -63,6 +117,10 @@
                     <th>Throughput (B/s)</th>
                     <th>Packet Delay (ms)</th>
                     <th>Jitter (ms)</th>
+                    <th>Packet Loss (%)</th>
+                    <th>RTT (ms)</th>
+                    <th>TTL</th>
+                    <th>Bandwidth Utilization (%)</th>
                 </tr>
             </thead>
             <tbody>

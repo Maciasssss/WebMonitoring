@@ -5,6 +5,9 @@ import time
 from colorama import Fore, Style
 from scapy.all import sniff, IP
 from scapy.utils import wrpcap
+from detectors.bruteforcelogin_detector import BruteForceLoginDetector
+from detectors.dnstunneling_detector import DNSTunnelingDetector
+from detectors.passwordfiltration_detector import PasswordExfiltrationDetector
 from sniffers.arp_handler import ARPHandler
 from sniffers.icmp_handler import ICMPHandler
 from sniffers.tcp_handler import TCPHandler
@@ -18,7 +21,7 @@ from detectors.portscan_detector import PortScanDetector
 from detectors.spoofing_detector import SpoofingDetector
 from monitors.bandwidth_monitor import BandwidthMonitor
 from monitors.connection_speed_monitor import ConnectionSpeedMonitor
-from monitors.performance_monitor import FlowMonitor
+from monitors.performance_monitor import PerformanceMonitor
 import queue
 
 
@@ -55,9 +58,11 @@ class PacketSniffer:
         self.ddos_detector = DDoSDetector()
         self.portscan_detector = PortScanDetector()
         self.spoofing_detector = SpoofingDetector()
+        self.dns_tunneling_detector = DNSTunnelingDetector()  # Added DNS tunneling detector
+        self.brute_force_detector = BruteForceLoginDetector()
         self.bandwidth_monitor = BandwidthMonitor()
         self.connection_speed_monitor = ConnectionSpeedMonitor()
-        self.flow_monitor = FlowMonitor()
+        self.performance_monitor = PerformanceMonitor()
         self.capture_file = config.capture_file
         self.total_packets = 0
         self.echo_request_count = 0
@@ -75,7 +80,14 @@ class PacketSniffer:
         self.lock = threading.Lock()
         self.sniffing = True
         self.packets = {}
-
+        self.dns_tunneling_alerts = []  # List to store DNS tunneling alerts
+        self.brute_force_alerts = [] 
+        self.ddos_alerts = []  # List to store DDoS alerts
+        self.port_scan_alerts = []  # List to store Port Scan alerts
+        self.spoofing_alerts = []  # List to store Spoofing alerts
+        self.password_exfiltration_alerts = []  # List to store password exfiltration alerts
+        self.password_exfiltration_detector = PasswordExfiltrationDetector()
+    
     def handle_packet(self, packet):
         with self.lock:
             if not self.sniffing:
@@ -85,16 +97,49 @@ class PacketSniffer:
             self.ddos_detector.monitor_traffic(packet)
             self.portscan_detector.monitor_traffic(packet)
             self.spoofing_detector.monitor_traffic(packet)
+            # Check for password exfiltration
+            if self.password_exfiltration_detector.monitor_traffic(packet):
+                src_ip = packet[IP].src
+                alert = {"ip": src_ip, "details": "Potential password exfiltration detected"}
+                self.password_exfiltration_alerts.append(alert)
+            # Handle DDoS detection
+            if self.ddos_detector.monitor_traffic(packet):
+                src_ip = packet[IP].src
+                alert = {"ip": src_ip, "details": "Potential DDoS attack detected"}
+                self.ddos_alerts.append(alert)
+
+            # Handle Port Scan detection
+            if self.portscan_detector.monitor_traffic(packet):
+                src_ip = packet[IP].src
+                alert = {"ip": src_ip, "details": "Potential Port Scan detected"}
+                self.port_scan_alerts.append(alert)
+
+            # Handle Spoofing detection
+            if self.spoofing_detector.monitor_traffic(packet):
+                src_ip = packet[IP].src
+                alert = {"ip": src_ip, "details": "Potential Spoofing attack detected"}
+                self.spoofing_alerts.append(alert)
+            if self.dns_tunneling_detector.monitor_traffic(packet):
+                src_ip = packet[IP].src
+                alert = {"ip": src_ip, "details": "Excessive DNS queries detected"}
+                self.dns_tunneling_alerts.append(alert)
+
+            # Handle Brute Force Login detection
+            if self.brute_force_detector.monitor_traffic(packet):
+                src_ip = packet[IP].src
+                alert = {"ip": src_ip, "details": "Multiple failed login attempts detected"}
+                self.brute_force_alerts.append(alert)
             self.bandwidth_monitor.monitor_traffic(packet)
             self.connection_speed_monitor.monitor_traffic(packet)
-            self.flow_monitor.monitor_flow(packet)
+            self.performance_monitor.monitor_flow(packet)
             time.sleep(0.5)
             self.total_packets += 1
             self.start_capture(self.packets_info)
             self.update_statistics()
             
     def get_flow_statistics(self):
-        return self.flow_monitor.get_flow_stats()
+        return self.performance_monitor.get_flow_stats()
+
     def get_recent_packets(self):
         with self.lock:
             return self.packets_info[-10:]  # Return the last 10 packets for display

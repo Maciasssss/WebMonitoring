@@ -7,6 +7,8 @@ from scapy.all import sniff, get_if_list
 import socket
 from scapy.arch.windows import get_windows_if_list
 
+import packet_sniffer
+
 def configure_routes(app):
     sniffer = None
     sniffer_thread = None
@@ -185,4 +187,29 @@ def configure_routes(app):
                     return jsonify(filtered_stats)
                 return jsonify(flow_stats)
         return jsonify({})
+
+    # Assuming 'sniffer' is your PacketSniffer instance
+    @app.route('/detector_alerts')
+    def get_detector_alerts():
+        if sniffer:  # Ensure the sniffer instance is valid
+            alerts = {
+                "dns_tunneling": sniffer.dns_tunneling_alerts[:],
+                "brute_force": sniffer.brute_force_alerts[:],
+                "ddos": sniffer.ddos_alerts[:],  # Add DDoS alerts
+                "port_scan": sniffer.port_scan_alerts[:],  # Add Port Scan alerts
+                "spoofing": sniffer.spoofing_alerts[:],  # Add Spoofing alerts
+                "password_exfiltration": sniffer.password_exfiltration_alerts[:]
+            }
+            # Clear the alerts after sending them
+            sniffer.dns_tunneling_alerts.clear()
+            sniffer.brute_force_alerts.clear()
+            sniffer.ddos_alerts.clear()
+            sniffer.port_scan_alerts.clear()
+            sniffer.spoofing_alerts.clear()
+            sniffer.password_exfiltration_alerts.clear()
+            return jsonify(alerts)
+        return jsonify({"error": "Sniffer not initialized"})
+
+
+
 

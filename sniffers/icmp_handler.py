@@ -27,6 +27,8 @@ class ICMPHandler(PacketHandlerStrategy):
             icmp_echo_sequence   = icmp_packet.seq
             icmp_checksum        = icmp_packet.chksum
 
+            icmp_type_str = f"ICMP Type {icmp_type}"
+
             if icmp_type == 8:  # ICMP Echo Request
                 icmp_type_str = "ICMP Echo Request"
                 self.echo_request_count += 1
@@ -74,13 +76,6 @@ class ICMPHandler(PacketHandlerStrategy):
                 payload_hex = "No Payload"
                 payload_content = "No Payload"
             print("-" * 40)
-
-            if icmp_packet.type == 8:  # ICMP Echo Request
-                self.echo_request_count += 1
-                self.total_bytes_sent += packet_size
-            elif icmp_packet.type == 0:  # ICMP Echo Reply
-                self.echo_reply_count += 1
-                self.total_bytes_received += packet_size
 
     def display_packet_info(self, protocol, src_ip, dst_ip, src_mac, dst_mac, ip_version, ttl, checksum, packet_size, protocol_str, identifier, sequence, packet):
         timestamp = datetime.fromtimestamp(packet.time).strftime('%Y-%m-%d %H:%M:%S')
