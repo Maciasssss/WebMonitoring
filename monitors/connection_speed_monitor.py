@@ -1,7 +1,9 @@
 from datetime import datetime
 from scapy.all import sniff, TCP, IP
 
-class ConnectionSpeedMonitor:
+from .monitor_strategy import MonitorStrategy
+
+class ConnectionSpeedMonitor(MonitorStrategy):
     def __init__(self):
         self.connection_start_times = {}
 

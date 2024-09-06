@@ -11,7 +11,7 @@ class BruteForceLoginDetector:
     def monitor_traffic(self, packet):
         if packet.haslayer(IP) and packet.haslayer(TCP) and packet.haslayer(Raw):
             payload = packet[Raw].load.decode(errors='ignore')  # Decode the raw payload
-            
+
             if "POST" in payload and "/login" in payload:  # Check for HTTP POST requests to login endpoint
                 src_ip = packet[IP].src
                 timestamp = datetime.now()
@@ -19,11 +19,17 @@ class BruteForceLoginDetector:
                 # Check for login failure by identifying relevant status codes in the response
                 if "401 Unauthorized" in payload or "403 Forbidden" in payload:
                     # Remove failed attempts that are older than the time window
-                    self.failed_login_attempts[src_ip] = [ts for ts in self.failed_login_attempts[src_ip] 
+                    self.failed_login_attempts[src_ip] = [ts for ts in self.failed_login_attempts[src_ip]
                                                           if ts > timestamp - timedelta(seconds=self.time_window)]
                     # Add the current failed login attempt
                     self.failed_login_attempts[src_ip].append(timestamp)
 
                     # Check if the number of failed attempts exceeds the threshold
                     if len(self.failed_login_attempts[src_ip]) > self.attempt_threshold:
-                        print(f"Potential brute force attack detected from {src_ip} - {len(self.failed_login_attempts[src_ip])} failed attempts in {self.time_window} seconds")
+                        return {
+                            "ip": src_ip,
+                            "type": "Brute Force Login",
+                            "details": f"{len(self.failed_login_attempts[src_ip])} failed login attempts detected from {src_ip}",
+                            "timestamp": timestamp
+                        }
+        return None  # No alert if nothing is detected

@@ -1,3 +1,4 @@
+#icpm_handler.py
 from scapy.all import ICMP, Ether, IP
 from .packet_handler_strategy import PacketHandlerStrategy
 from datetime import datetime
@@ -8,7 +9,7 @@ class ICMPHandler(PacketHandlerStrategy):
         self.sniffer = sniffer
 
     def handle_packet(self, packet):
-        if packet.haslayer(ICMP) and packet.haslayer(Ether):
+        if packet.haslayer(ICMP) and packet.haslayer(IP):
             icmp_packet = packet.getlayer(ICMP)
             ip_header = packet.getlayer('IP')
             ether_header = packet.getlayer(Ether)
@@ -31,12 +32,12 @@ class ICMPHandler(PacketHandlerStrategy):
 
             if icmp_type == 8:  # ICMP Echo Request
                 icmp_type_str = "ICMP Echo Request"
-                self.echo_request_count += 1
-                self.total_bytes_sent += packet_size
+                self.sniffer.echo_request_count += 1
+                self.sniffer.total_bytes_sent += packet_size
             elif icmp_type == 0:  # ICMP Echo Reply
                 icmp_type_str = "ICMP Echo Reply"
-                self.echo_reply_count += 1
-                self.total_bytes_received += packet_size
+                self.sniffer.echo_reply_count += 1
+                self.sniffer.total_bytes_received += packet_size
 
             timestamp = datetime.fromtimestamp(packet.time).strftime('%Y-%m-%d %H:%M:%S')
             self.sniffer.icmp_count += 1

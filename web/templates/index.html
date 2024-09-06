@@ -26,8 +26,9 @@
         <input type="checkbox" id="verbose" name="verbose"><br><br>
 
         <!-- Input for selecting a file location -->
-        <label for="capture_file">Select a File to Save Packets:</label>
-        <input type="file" id="capture_file" name="capture_file" webkitdirectory directory mozdirectory placeholder="Optional"><br><br>
+        <label for="capture_file">Enter File Name to Save Packets (with extension):</label>
+        <input type="text" id="capture_file" name="capture_file" placeholder="e.g., capture.csv"><br><br>
+
         <!-- Download Button (Initially hidden) -->
         <div id="downloadContainer" style="display: none;">
             <h3>Download Capture File:</h3>
@@ -88,6 +89,13 @@
                 <h3>Password Exfiltration Alerts</h3>
                 <ul id="passwordExfiltrationAlerts"></ul>
                 <span id="passwordExfiltrationFlag" class="flag hidden">&#x1F6A8;</span> <!-- Red Flag Icon -->
+            </div>
+        </div>
+        <!-- Synflood Alert -->
+            <div id="synfloodAlertBox" class="alert-box">
+                <h3>SYN flood attack Alerts</h3>
+                <ul id="synfloodAlerts"></ul>
+                <span id="synfloodFlag" class="flag hidden">&#x1F6A8;</span> <!-- Red Flag Icon -->
             </div>
         </div>
     

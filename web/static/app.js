@@ -168,7 +168,7 @@ $(document).ready(function() {
                 ]);
             }
 
-            flowStatisticsTable.draw();  // Redraw the table with the updated data
+            flowStatisticsTable.draw(false);  // Redraw the table with the updated data
         });
     }
 
@@ -178,18 +178,18 @@ $(document).ready(function() {
     $('#flowIpFilter').on('input', function() {
         fetchFlowStatistics();  // Re-fetch flow statistics when the input changes
     });
-    const dnsTunnelingAlerts = $('#dnsTunnelingAlerts');
-    const bruteForceAlerts = $('#bruteForceAlerts');
+    
 
     function fetchDetectorAlerts() {
         $.get('/detector_alerts', function(alerts) {
             // Clear previous alerts
-            dnsTunnelingAlerts.empty();
-            bruteForceAlerts.empty();
-            ddosAlerts.empty();
-            portScanAlerts.empty();
-            spoofingAlerts.empty();
-            passwordExfiltrationAlerts.empty();
+            $('#dnsTunnelingAlerts').empty();
+            $('#bruteForceAlerts').empty();
+            $('#ddosAlerts').empty();
+            $('#portScanAlerts').empty();
+            $('#spoofingAlerts').empty();
+            $('#passwordExfiltrationAlerts').empty();
+            $('#synfloodAlerts').empty();
     
             // Reset flags
             $('#dnsTunnelingFlag').addClass('hidden');
@@ -198,13 +198,14 @@ $(document).ready(function() {
             $('#portScanFlag').addClass('hidden');
             $('#spoofingFlag').addClass('hidden');
             $('#passwordExfiltrationFlag').addClass('hidden');
+            $('#synfloodFlag').addClass('hidden');
     
             // Populate DNS Tunneling Alerts
             if (alerts.dns_tunneling.length > 0) {
                 $('#dnsTunnelingFlag').removeClass('hidden'); // Show red flag
                 alerts.dns_tunneling.forEach(alert => {
                     const listItem = `<li><a href="#" class="alert-link" data-alert="${alert.details}">DNS Tunneling detected from ${alert.ip}</a></li>`;
-                    dnsTunnelingAlerts.append(listItem);
+                    $('#dnsTunnelingAlerts').append(listItem);
                 });
             }
     
@@ -213,7 +214,7 @@ $(document).ready(function() {
                 $('#bruteForceFlag').removeClass('hidden'); // Show red flag
                 alerts.brute_force.forEach(alert => {
                     const listItem = `<li><a href="#" class="alert-link" data-alert="${alert.details}">Brute Force detected from ${alert.ip}</a></li>`;
-                    bruteForceAlerts.append(listItem);
+                    $('#bruteForceAlerts').append(listItem);
                 });
             }
     
@@ -222,7 +223,7 @@ $(document).ready(function() {
                 $('#ddosFlag').removeClass('hidden'); // Show red flag
                 alerts.ddos.forEach(alert => {
                     const listItem = `<li><a href="#" class="alert-link" data-alert="${alert.details}">DDoS attack detected from ${alert.ip}</a></li>`;
-                    ddosAlerts.append(listItem);
+                    $('#ddosAlerts').append(listItem);
                 });
             }
     
@@ -231,7 +232,7 @@ $(document).ready(function() {
                 $('#portScanFlag').removeClass('hidden'); // Show red flag
                 alerts.port_scan.forEach(alert => {
                     const listItem = `<li><a href="#" class="alert-link" data-alert="${alert.details}">Port Scan detected from ${alert.ip}</a></li>`;
-                    portScanAlerts.append(listItem);
+                    $('#portScanAlerts').append(listItem);
                 });
             }
     
@@ -240,7 +241,7 @@ $(document).ready(function() {
                 $('#spoofingFlag').removeClass('hidden'); // Show red flag
                 alerts.spoofing.forEach(alert => {
                     const listItem = `<li><a href="#" class="alert-link" data-alert="${alert.details}">Spoofing detected from ${alert.ip}</a></li>`;
-                    spoofingAlerts.append(listItem);
+                    $('#spoofingAlerts').append(listItem);
                 });
             }
     
@@ -249,7 +250,14 @@ $(document).ready(function() {
                 $('#passwordExfiltrationFlag').removeClass('hidden'); // Show red flag
                 alerts.password_exfiltration.forEach(alert => {
                     const listItem = `<li><a href="#" class="alert-link" data-alert="${alert.details}">Password Exfiltration detected from ${alert.ip}</a></li>`;
-                    passwordExfiltrationAlerts.append(listItem);
+                    $('#passwordExfiltrationAlerts').append(listItem);
+                });
+            }
+            if (alerts.synflood.length > 0) {
+                $('#synfloodFlag').removeClass('hidden'); // Show red flag
+                alerts.synflood.forEach(alert => {
+                    const listItem = `<li><a href="#" class="alert-link" data-alert="${alert.details}">Potential SYN flood attack detected from ${alert.ip}</a></li>`;
+                    $('#synfloodAlerts').append(listItem);
                 });
             }
     
@@ -261,6 +269,7 @@ $(document).ready(function() {
             });
         });
     }
+    
     
     
     
@@ -306,10 +315,10 @@ $(document).ready(function() {
                     alert("Packet sniffer started!");
 
                     // Start polling for statistics and packets after the sniffer starts
-                    setInterval(fetchDetectorAlerts, 1000);
-                    setInterval(fetchStatistics, 1000);
-                    setInterval(fetchFlowStatistics, 1000);
-                    setInterval(fetchPackets, 500);
+                    setInterval(fetchDetectorAlerts, 400);
+                    setInterval(fetchStatistics, 400);
+                    setInterval(fetchFlowStatistics, 400);
+                    setInterval(fetchPackets, 400);
                     setInterval(checkCaptureStatus, 5000);
                 })
                 .fail(function() {
@@ -319,4 +328,7 @@ $(document).ready(function() {
     });
 
 });
+
+
+
 

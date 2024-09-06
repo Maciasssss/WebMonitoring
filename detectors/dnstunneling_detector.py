@@ -2,7 +2,9 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 from scapy.all import IP, UDP, DNS, DNSQR
 
-class DNSTunnelingDetector:
+from .detector_strategy import DetectorStrategy
+
+class DNSTunnelingDetector(DetectorStrategy):
     def __init__(self, time_window=60, query_threshold=50):
         self.time_window = time_window  # Time window in seconds to track DNS requests
         self.query_threshold = query_threshold  # Number of DNS queries in the time window considered suspicious
@@ -21,5 +23,10 @@ class DNSTunnelingDetector:
 
                 # If the number of DNS queries from this IP exceeds the threshold, trigger an alert
                 if len(self.dns_queries[src_ip]) > self.query_threshold:
-                    print(f"Potential DNS tunneling detected from {src_ip} - {len(self.dns_queries[src_ip])} DNS queries in {self.time_window} seconds")
-
+                    return {
+                        "ip": src_ip,
+                        "type": "DNS Tunneling",
+                        "details": f"{len(self.dns_queries[src_ip])} DNS queries in {self.time_window} seconds",
+                        "timestamp": timestamp
+                    }
+        return None  # No alert if nothing is detected

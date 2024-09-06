@@ -1,3 +1,4 @@
+#routes.py
 import logging
 import os
 from flask import jsonify, render_template, request, redirect, send_file, url_for
@@ -27,15 +28,13 @@ def configure_routes(app):
 
                 # Try to get an IPv4 address
                 for ip in ips:
-                    if '.' in ip:
+                    if '.' in ip:  # IPv4
                         ip_address = ip
                         break
-
-                # If no IPv4 address is found, use any IP address (e.g., IPv6)
-                if not ip_address and ips:
+                if not ip_address and ips:  # If no IPv4, get first available IP
                     ip_address = ips[0]
 
-                # Filter out interfaces without any IP address
+                # Only include interfaces with a valid IP address
                 if ip_address:
                     sniffable_interfaces.append({
                         'name': friendly_name,
@@ -48,6 +47,7 @@ def configure_routes(app):
                 continue
 
         return sniffable_interfaces
+
 
 
     def get_friendly_to_guid_mapping():
@@ -175,40 +175,32 @@ def configure_routes(app):
             return jsonify(sniffer.packets_info)
         return jsonify([])
 
+    # routes.py
     @app.route('/flow_statistics')
     def get_flow_statistics():
-        ip_filter = request.args.get('ip_filter', '')  # Get the IP filter from the request
         nonlocal sniffer
-        with lock:
-            if sniffer:
-                flow_stats = sniffer.get_flow_statistics()
-                if ip_filter:  # If an IP filter is provided, filter the stats
-                    filtered_stats = {flow: stats for flow, stats in flow_stats.items() if ip_filter in flow}
-                    return jsonify(filtered_stats)
-                return jsonify(flow_stats)
-        return jsonify({})
+        if sniffer:
+            flow_stats = sniffer.get_flow_statistics()
+            return jsonify(flow_stats)
+        return jsonify({"error": "No flow statistics available"}), 404
+
 
     # Assuming 'sniffer' is your PacketSniffer instance
     @app.route('/detector_alerts')
     def get_detector_alerts():
         if sniffer:  # Ensure the sniffer instance is valid
             alerts = {
-                "dns_tunneling": sniffer.dns_tunneling_alerts[:],
-                "brute_force": sniffer.brute_force_alerts[:],
-                "ddos": sniffer.ddos_alerts[:],  # Add DDoS alerts
-                "port_scan": sniffer.port_scan_alerts[:],  # Add Port Scan alerts
-                "spoofing": sniffer.spoofing_alerts[:],  # Add Spoofing alerts
-                "password_exfiltration": sniffer.password_exfiltration_alerts[:]
+                "dns_tunneling": sniffer.alert_manager.get_alerts_by_type("dns_tunneling"),
+                "brute_force": sniffer.alert_manager.get_alerts_by_type("brute_force"),
+                "ddos": sniffer.alert_manager.get_alerts_by_type("ddos"),
+                "port_scan": sniffer.alert_manager.get_alerts_by_type("port_scan"),
+                "spoofing": sniffer.alert_manager.get_alerts_by_type("spoofing"),
+                "password_exfiltration": sniffer.alert_manager.get_alerts_by_type("password_exfiltration")
             }
-            # Clear the alerts after sending them
-            sniffer.dns_tunneling_alerts.clear()
-            sniffer.brute_force_alerts.clear()
-            sniffer.ddos_alerts.clear()
-            sniffer.port_scan_alerts.clear()
-            sniffer.spoofing_alerts.clear()
-            sniffer.password_exfiltration_alerts.clear()
             return jsonify(alerts)
         return jsonify({"error": "Sniffer not initialized"})
+
+
 
 
 

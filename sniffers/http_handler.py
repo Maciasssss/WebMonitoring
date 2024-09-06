@@ -9,68 +9,104 @@ class HTTPHandler(PacketHandlerStrategy):
         self.sniffer = sniffer
         
     def handle_packet(self, packet):
-        if packet.haslayer(TCP) and packet.haslayer(Raw):
-            payload = packet[Raw].load
-            
-            try:
-                # Decode the bytes payload to a string for comparison
-                decoded_payload = payload.decode('utf-8', errors='ignore')  # Ignore any errors in decoding
-            except UnicodeDecodeError:
-                decoded_payload = ""
+        if packet.haslayer(TCP):
+            if packet.haslayer(Raw):  # For HTTP packets
+                payload = packet[Raw].load
+                try:
+                    decoded_payload = payload.decode('utf-8', errors='ignore')  # Ignore decoding errors
+                except UnicodeDecodeError:
+                    decoded_payload = ""
 
-            if packet.haslayer(IP):
-                src_ip = packet[IP].src
-                dst_ip = packet[IP].dst
-                src_port = packet[TCP].sport
-                dst_port = packet[TCP].dport
+                if packet.haslayer(IP):
+                    src_ip = packet[IP].src
+                    dst_ip = packet[IP].dst
+                    src_port = packet[TCP].sport
+                    dst_port = packet[TCP].dport
 
-                # Initialize variables
-                protocol_str = "Unknown HTTP Traffic"
-                http_info = "Unknown HTTP Traffic"
-                http_method = "N/A"
+                    # Initialize variables
+                    protocol_str = "Unknown HTTP Traffic"
+                    http_info = "Unknown HTTP Traffic"
+                    http_method = "N/A"
 
-                # Use regex to capture HTTP methods and responses
-                http_method_match = re.match(r"^(GET|POST|PUT|DELETE|HEAD|OPTIONS|PATCH)", decoded_payload)
-                http_response_match = re.match(r"^HTTP\/\d\.\d\s(\d{3})", decoded_payload)
+                    # Use regex to capture HTTP methods and responses
+                    http_method_match = re.match(r"^(GET|POST|PUT|DELETE|HEAD|OPTIONS|PATCH)", decoded_payload)
+                    http_response_match = re.match(r"^HTTP\/\d\.\d\s(\d{3})", decoded_payload)
 
-                # Check if the packet is an HTTP request
-                if http_method_match:
-                    http_method = http_method_match.group(0)  # Extract the matched HTTP method
-                    protocol_str = "HTTP Request"
-                    http_info = f"{http_method} {src_port}->{dst_port}"
-                
-                # Check if the packet is an HTTP response
-                elif http_response_match:
-                    status_code = http_response_match.group(1)  # Extract the status code from HTTP response
-                    protocol_str = "HTTP Response"
-                    http_info = f"HTTP/{status_code} {src_port}->{dst_port}"
+                    # Check if the packet is an HTTP request
+                    if http_method_match:
+                        http_method = http_method_match.group(0)  # Extract the matched HTTP method
+                        protocol_str = "HTTP Request"
+                        http_info = f"{http_method} {src_port}->{dst_port}"
+                    
+                    # Check if the packet is an HTTP response
+                    elif http_response_match:
+                        status_code = http_response_match.group(1)  # Extract the status code from HTTP response
+                        protocol_str = "HTTP Response"
+                        http_info = f"HTTP/{status_code} {src_port}->{dst_port}"
 
-                packet_size = len(packet)
-                self.display_packet_info(
-                    protocol_str, src_ip, dst_ip, "N/A", "N/A", "IPv4", "N/A",
-                    protocol_str, packet_size, http_info, "N/A", "N/A", packet
-                )
-                self.sniffer.http_count += 1
+                    packet_size = len(packet)
+                    self.display_packet_info(
+                        protocol_str, src_ip, dst_ip, "N/A", "N/A", "IPv4", "N/A",
+                        protocol_str, packet_size, http_info, "N/A", "N/A", packet
+                    )
+                    self.sniffer.http_count += 1
 
-                # Add packet information to the sniffer's packet info list
-                packet_info = {
-                    "src_ip": src_ip,
-                    "dst_ip": dst_ip,
-                    "src_mac": "N/A",
-                    "dst_mac": "N/A",
-                    "ip_version": "IPv4",
-                    "ttl": "N/A",
-                    "checksum": "N/A",
-                    "packet_size": f"{packet_size} bytes",
-                    "passing_time": datetime.fromtimestamp(packet.time).strftime('%Y-%m-%d %H:%M:%S'),
-                    "protocol": protocol_str,
-                    "identifier": "N/A",
-                    "sequence": "N/A",
-                    "HTTP Method": http_method
-                }
-                self.sniffer.packets_info.append(packet_info)
-                if len(self.sniffer.packets_info) > 100:
-                    self.sniffer.packets_info.pop(0)
+                    # Add packet information to the sniffer's packet info list
+                    packet_info = {
+                        "src_ip": src_ip,
+                        "dst_ip": dst_ip,
+                        "src_mac": "N/A",
+                        "dst_mac": "N/A",
+                        "ip_version": "IPv4",
+                        "ttl": "N/A",
+                        "checksum": "N/A",
+                        "packet_size": f"{packet_size} bytes",
+                        "passing_time": datetime.fromtimestamp(packet.time).strftime('%Y-%m-%d %H:%M:%S'),
+                        "protocol": protocol_str,
+                        "identifier": "N/A",
+                        "sequence": "N/A",
+                        "HTTP Method": http_method
+                    }
+                    self.sniffer.packets_info.append(packet_info)
+                    if len(self.sniffer.packets_info) > 100:
+                        self.sniffer.packets_info.pop(0)
+
+            else:  # For HTTPS packets
+                if packet.haslayer(IP):
+                    src_ip = packet[IP].src
+                    dst_ip = packet[IP].dst
+                    src_port = packet[TCP].sport
+                    dst_port = packet[TCP].dport
+
+                    # HTTPS usually uses port 443
+                    if dst_port == 443 or src_port == 443:
+                        protocol_str = "HTTPS Traffic"
+                        packet_size = len(packet)
+                        self.display_packet_info(
+                            protocol_str, src_ip, dst_ip, "N/A", "N/A", "IPv4", "N/A",
+                            "TCP", packet_size, "Encrypted HTTPS Traffic", "N/A", "N/A", packet
+                        )
+                        self.sniffer.http_count += 1
+
+                        # Add packet information to the sniffer's packet info list
+                        packet_info = {
+                            "src_ip": src_ip,
+                            "dst_ip": dst_ip,
+                            "src_mac": "N/A",
+                            "dst_mac": "N/A",
+                            "ip_version": "IPv4",
+                            "ttl": "N/A",
+                            "checksum": "N/A",
+                            "packet_size": f"{packet_size} bytes",
+                            "passing_time": datetime.fromtimestamp(packet.time).strftime('%Y-%m-%d %H:%M:%S'),
+                            "protocol": "HTTPS",
+                            "identifier": "N/A",
+                            "sequence": "N/A",
+                            "HTTP Method": "N/A"  # Since it's encrypted
+                        }
+                        self.sniffer.packets_info.append(packet_info)
+                        if len(self.sniffer.packets_info) > 100:
+                            self.sniffer.packets_info.pop(0)
 
     def display_packet_info(self, protocol, src_ip, dst_ip, src_mac, dst_mac, ip_version, ttl, checksum, packet_size, protocol_str, identifier, sequence, packet):
         timestamp = datetime.fromtimestamp(packet.time).strftime('%Y-%m-%d %H:%M:%S')

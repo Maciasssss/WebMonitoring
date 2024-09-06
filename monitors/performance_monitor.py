@@ -1,8 +1,10 @@
 from datetime import datetime
 from collections import defaultdict
 from scapy.all import IP
+
+from .monitor_strategy import MonitorStrategy
 #seperate to diffrent monitor classes
-class PerformanceMonitor:
+class PerformanceMonitor(MonitorStrategy):
     def __init__(self):
         self.flows = defaultdict(lambda: {
             'start_time': None, 
@@ -15,7 +17,7 @@ class PerformanceMonitor:
         })
         self.expected_packet_counts = defaultdict(int)  # Track expected packet count for each flow
         self.total_observed_bytes = 0  # Track total bytes for calculating bandwidth
-    def monitor_flow(self, packet):
+    def monitor_traffic(self, packet):
         if packet.haslayer(IP):
             src_ip = packet[IP].src
             dst_ip = packet[IP].dst

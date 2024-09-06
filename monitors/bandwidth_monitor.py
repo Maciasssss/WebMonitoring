@@ -1,7 +1,9 @@
 from datetime import datetime
 from scapy.all import sniff
 
-class BandwidthMonitor:
+from .monitor_strategy import MonitorStrategy
+
+class BandwidthMonitor(MonitorStrategy):
     def __init__(self, time_window=1):
         self.time_window = time_window
         self.data_transferred = 0
