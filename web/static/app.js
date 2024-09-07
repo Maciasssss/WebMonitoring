@@ -315,10 +315,10 @@ $(document).ready(function() {
                     alert("Packet sniffer started!");
 
                     // Start polling for statistics and packets after the sniffer starts
-                    setInterval(fetchDetectorAlerts, 400);
-                    setInterval(fetchStatistics, 400);
-                    setInterval(fetchFlowStatistics, 400);
-                    setInterval(fetchPackets, 400);
+                    setInterval(fetchDetectorAlerts, 1000);
+                    setInterval(fetchStatistics, 1000);
+                    setInterval(fetchFlowStatistics, 1000);
+                    setInterval(fetchPackets, 1000);
                     setInterval(checkCaptureStatus, 5000);
                 })
                 .fail(function() {

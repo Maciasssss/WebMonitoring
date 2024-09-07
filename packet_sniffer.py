@@ -4,7 +4,7 @@ from datetime import datetime
 import threading
 import time
 from colorama import Fore, Style
-from scapy.all import sniff, IP
+from scapy.all import sniff, IP,TCP
 from scapy.utils import wrpcap
 from detectors.alert_manager import AlertManager
 from detectors.bruteforcelogin_detector import BruteForceLoginDetector
@@ -125,9 +125,24 @@ class PacketSniffer:
             self.total_packets += 1
             self.start_capture(self.packets_info)
             self.update_statistics()
-            
+            pass
+
     def get_flow_statistics(self):
-        return self.monitors["Performance"].get_flow_stats()
+        # Gather flow statistics from your monitors
+        flow_stats = self.monitors["Performance"].get_flow_stats()
+
+        # Create a new dictionary to store filtered flow statistics
+        filtered_flow_stats = {}
+
+        for flow, stats in flow_stats.items():
+            src_ip = flow[0]  # Assuming flow is a tuple like (src_ip, dst_ip)
+            dst_ip = flow[1]
+
+            # Check if the flow involves your app's IP and exclude it
+            if not (src_ip == "192.168.55.103" or dst_ip == "192.168.55.103"):
+                filtered_flow_stats[flow] = stats  # Only add non-app traffic to flow stats
+
+        return filtered_flow_stats
 
     def update_statistics(self):
         statistics = {
@@ -146,12 +161,29 @@ class PacketSniffer:
             'total_bytes_received': self.total_bytes_received,
         }
         self.config.statistics_queue.put(statistics)
+   
+    def packet_filter(packet):
+    # Replace '192.168.55.103' with your machine's IP and exclude HTTP/HTTPS ports (80 and 443)
+        if packet.haslayer(IP):
+            src_ip = packet[IP].src
+            dst_ip = packet[IP].dst
 
+            # Add conditions to exclude your app's traffic
+            if (src_ip == "192.168.55.103" or dst_ip == "192.168.55.103") and \
+            (packet.haslayer(TCP) and (packet[TCP].sport == 80 or packet[TCP].dport == 80 or 
+                                        packet[TCP].sport == 443 or packet[TCP].dport == 443)):
+                return False  # Skip processing this packet
+
+        return True  # Process all other packets
+    
     def start_sniffing(self):
         if not self.config.interface:
             raise ValueError("No valid network interface provided.")
         self.sniffing = True
-        sniff(iface=self.config.interface, prn=self.handle_packet, store=False,filter="not (host 192.168.55.103 and (tcp port 80 or tcp port 443))", timeout=self.config.timeout, stop_filter=lambda x: not self.sniffing)
+        sniff(iface=self.config.interface, prn=self.handle_packet, store=False,
+                filter="not (host 192.168.55.103 and (tcp port 80 or tcp port 443))", 
+                timeout=self.config.timeout, stop_filter=lambda x: not self.sniffing)
+
 
     def stop_sniffing(self):
         self.sniffing = False
