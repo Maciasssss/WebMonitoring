@@ -1,5 +1,8 @@
 $(document).ready(function() {
     let captureStarted = false;  // Flag to prevent multiple starts
+    const MAX_ALERTS_DISPLAYED = 5;
+    let totalAlertCount = 0;
+
     const packetTable = $('#packetTable').DataTable({
         columns: [
             { title: "Source IP" },
@@ -181,119 +184,108 @@ $(document).ready(function() {
     
 
     function fetchDetectorAlerts() {
-        $.get('/detector_alerts', function(alerts) {
-            // Clear previous alerts
-            $('#dnsTunnelingAlerts').empty();
-            $('#bruteForceAlerts').empty();
-            $('#ddosAlerts').empty();
-            $('#portScanAlerts').empty();
-            $('#spoofingAlerts').empty();
-            $('#passwordExfiltrationAlerts').empty();
-            $('#synfloodAlerts').empty();
-    
-            // Reset flags
-            $('#dnsTunnelingFlag').addClass('hidden');
-            $('#bruteForceFlag').addClass('hidden');
-            $('#ddosFlag').addClass('hidden');
-            $('#portScanFlag').addClass('hidden');
-            $('#spoofingFlag').addClass('hidden');
-            $('#passwordExfiltrationFlag').addClass('hidden');
-            $('#synfloodFlag').addClass('hidden');
-    
-            // Populate DNS Tunneling Alerts
-            if (alerts.dns_tunneling.length > 0) {
-                $('#dnsTunnelingFlag').removeClass('hidden'); // Show red flag
-                alerts.dns_tunneling.forEach(alert => {
-                    const listItem = `<li><a href="#" class="alert-link" data-alert="${alert.details}">DNS Tunneling detected from ${alert.ip}</a></li>`;
-                    $('#dnsTunnelingAlerts').append(listItem);
+        $.get('/detector_alerts', function (alerts) {
+            try {
+                // Ensure alerts data is available
+                if (!alerts) throw new Error("No alerts data received");
+
+                // Clear previous alerts
+                clearAllAlerts();
+
+                let alertCounts = {
+                    dnsTunneling: alerts.dns_tunneling ? alerts.dns_tunneling.length : 0,
+                    bruteForce: alerts.brute_force ? alerts.brute_force.length : 0,
+                    ddos: alerts.ddos ? alerts.ddos.length : 0,
+                    portScan: alerts.port_scan ? alerts.port_scan.length : 0,
+                    spoofing: alerts.spoofing ? alerts.spoofing.length : 0,
+                    passwordExfiltration: alerts.password_exfiltration ? alerts.password_exfiltration.length : 0,
+                    synflood: alerts.synflood ? alerts.synflood.length : 0
+                };
+
+                updateNotificationCounts(alertCounts);
+
+                // Display the alerts (capping at MAX_ALERTS_DISPLAYED per type)
+                displayAlerts('dnsTunneling', alerts.dns_tunneling);
+                displayAlerts('bruteForce', alerts.brute_force);
+                displayAlerts('ddos', alerts.ddos);
+                displayAlerts('portScan', alerts.port_scan);
+                displayAlerts('spoofing', alerts.spoofing);
+                displayAlerts('passwordExfiltration', alerts.password_exfiltration);
+                displayAlerts('synflood', alerts.synflood);
+
+                // Attach modal click event to show detailed info
+                $('.alert-link').on('click', function (event) {
+                    event.preventDefault();
+                    const alertDetails = $(this).data('alert');
+                    displayAlertModal(alertDetails); // Show alert in modal
                 });
+
+            } catch (error) {
+                console.error("Error processing alerts:", error.message);
             }
-    
-            // Populate Brute Force Alerts
-            if (alerts.brute_force.length > 0) {
-                $('#bruteForceFlag').removeClass('hidden'); // Show red flag
-                alerts.brute_force.forEach(alert => {
-                    const listItem = `<li><a href="#" class="alert-link" data-alert="${alert.details}">Brute Force detected from ${alert.ip}</a></li>`;
-                    $('#bruteForceAlerts').append(listItem);
-                });
-            }
-    
-            // Populate DDoS Alerts
-            if (alerts.ddos.length > 0) {
-                $('#ddosFlag').removeClass('hidden'); // Show red flag
-                alerts.ddos.forEach(alert => {
-                    const listItem = `<li><a href="#" class="alert-link" data-alert="${alert.details}">DDoS attack detected from ${alert.ip}</a></li>`;
-                    $('#ddosAlerts').append(listItem);
-                });
-            }
-    
-            // Populate Port Scan Alerts
-            if (alerts.port_scan.length > 0) {
-                $('#portScanFlag').removeClass('hidden'); // Show red flag
-                alerts.port_scan.forEach(alert => {
-                    const listItem = `<li><a href="#" class="alert-link" data-alert="${alert.details}">Port Scan detected from ${alert.ip}</a></li>`;
-                    $('#portScanAlerts').append(listItem);
-                });
-            }
-    
-            // Populate Spoofing Alerts
-            if (alerts.spoofing.length > 0) {
-                $('#spoofingFlag').removeClass('hidden'); // Show red flag
-                alerts.spoofing.forEach(alert => {
-                    const listItem = `<li><a href="#" class="alert-link" data-alert="${alert.details}">Spoofing detected from ${alert.ip}</a></li>`;
-                    $('#spoofingAlerts').append(listItem);
-                });
-            }
-    
-            // Populate Password Exfiltration Alerts
-            if (alerts.password_exfiltration.length > 0) {
-                $('#passwordExfiltrationFlag').removeClass('hidden'); // Show red flag
-                alerts.password_exfiltration.forEach(alert => {
-                    const listItem = `<li><a href="#" class="alert-link" data-alert="${alert.details}">Password Exfiltration detected from ${alert.ip}</a></li>`;
-                    $('#passwordExfiltrationAlerts').append(listItem);
-                });
-            }
-            if (alerts.synflood.length > 0) {
-                $('#synfloodFlag').removeClass('hidden'); // Show red flag
-                alerts.synflood.forEach(alert => {
-                    const listItem = `<li><a href="#" class="alert-link" data-alert="${alert.details}">Potential SYN flood attack detected from ${alert.ip}</a></li>`;
-                    $('#synfloodAlerts').append(listItem);
-                });
-            }
-    
-            // Add click event to show detailed info in a modal
-            $('.alert-link').on('click', function(event) {
-                event.preventDefault();
-                const alertDetails = $(this).data('alert');
-                displayAlertModal(alertDetails);  // Show the alert details in a modal
-            });
+        }).fail(function (jqXHR, textStatus, errorThrown) {
+            console.error("Error fetching alerts:", textStatus, errorThrown);
         });
     }
-    
-    
-    
-    
-    // Function to display the alert modal
+
+    // Function to clear all alert sections before repopulating
+    function clearAllAlerts() {
+        $('#dnsTunnelingAlerts').empty();
+        $('#bruteForceAlerts').empty();
+        $('#ddosAlerts').empty();
+        $('#portScanAlerts').empty();
+        $('#spoofingAlerts').empty();
+        $('#passwordExfiltrationAlerts').empty();
+        $('#synfloodAlerts').empty();
+    }
+
+    // Function to display alerts with a maximum limit and show red flag icon
+    function displayAlerts(type, alerts) {
+        const alertSection = $('#' + type + 'Alerts');
+        const alertFlag = $('#' + type + 'Flag');
+        const alertCountBadge = $('#' + type + 'Count');
+
+        if (alerts && alerts.length > 0) {
+            alertFlag.removeClass('hidden'); // Show red flag icon
+            alertCountBadge.text(alerts.length); // Update alert count
+
+            alerts.slice(0, MAX_ALERTS_DISPLAYED).forEach(alert => {
+                const listItem = `<li><a href="#" class="alert-link" data-alert="${alert.details}">${alert.details} </a></li>`;
+                alertSection.append(listItem);
+            });
+        } else {
+            alertFlag.addClass('hidden'); // Hide red flag icon
+            alertCountBadge.text('0'); // Reset alert count
+        }
+    }
+
+    // Update total notification counts
+    function updateNotificationCounts(counts) {
+        // Update total alert count
+        totalAlertCount = Object.values(counts).reduce((sum, count) => sum + count, 0);
+        $('#totalAlertCount').text(totalAlertCount);
+    }
+
+    // Function to display the alert modal with more details
     function displayAlertModal(details) {
-        // Set the modal content with the alert details
         const detailsHtml = `
             <h3>Alert Details</h3>
             <p>${details}</p>
         `;
-        $('#alertDetails').html(detailsHtml);  // Insert the details into the modal content
-    
+        $('#alertDetails').html(detailsHtml); // Insert the details into the modal content
+
         // Show the modal
         const modal = document.getElementById("alertModal");
         modal.style.display = "block";
-    
+
         // Close modal when clicking the "X" button
         const span = document.getElementsByClassName("close")[0];
-        span.onclick = function() {
+        span.onclick = function () {
             modal.style.display = "none";
         }
-    
+
         // Close the modal if the user clicks anywhere outside the modal
-        window.onclick = function(event) {
+        window.onclick = function (event) {
             if (event.target == modal) {
                 modal.style.display = "none";
             }

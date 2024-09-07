@@ -55,37 +55,83 @@ input[type="text"] {
     cursor: pointer;
 }
 
-
-/* alrts*/
-.alerts-container {
+/* Style for the alert categories */
+.alert-category {
     display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
 }
 
-.alert-box {
-    border: 2px solid #ccc;
-    padding: 10px;
-    width: 30%; /* Adjust this for the layout */
-    min-width: 200px;
-    position: relative;
-    background-color: #f9f9f9;
+.alert-flag {
+    margin-right: 10px;
 }
 
-.flag {
-    font-size: 24px;
-    color: red;
-    position: absolute;
-    top: 10px;
-    right: 10px;
+.flag-icon {
+    width: 50px;
+    height: 50px;
 }
 
 .hidden {
     display: none;
 }
 
-ul {
+.alert-title {
+    font-weight: bold;
+}
+
+.alert-list {
     list-style-type: none;
     padding-left: 0;
+    margin-top: 5px;
+}
+
+.alert-list li {
+    margin-left: 30px;
+}
+
+.badge {
+    background-color: #ff0000;
+    color: #ffffff;
+    padding: 2px 6px;
+    border-radius: 50%;
+    margin-left: 5px;
+}
+
+.total-alerts {
+    font-size: 16px;
+    margin-top: 20px;
+    font-weight: bold;
+}
+
+/* Modal styles */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1000; /* Sit on top */
+    padding-top: 100px; /* Location of the box */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 50%;
+    position: relative;
+}
+
+.close {
+    color: #aaa;
+    position: absolute;
+    right: 15px;
+    top: 15px;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
 }

@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css">
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script src="{{ url_for('static', filename='app.js') }}"></script>
 </head>
 <body>
@@ -47,69 +48,84 @@
         <!-- Statistics will be populated by JavaScript -->
     </div>
 
-    <h2>Detector Alerts</h2>
-        <div id="alertsContainer" class="alerts-container">
-            <!-- DNS Tunneling Alert -->
-            <div id="dnsTunnelingAlertBox" class="alert-box">
-                <h3>DNS Tunneling Alerts</h3>
-                <ul id="dnsTunnelingAlerts"></ul>
-                <span id="dnsTunnelingFlag" class="flag hidden">&#x1F6A8;</span> <!-- Red Flag Icon -->
-            </div>
-        
-            <!-- Brute Force Alert -->
-            <div id="bruteForceAlertBox" class="alert-box">
-                <h3>Brute Force Alerts</h3>
-                <ul id="bruteForceAlerts"></ul>
-                <span id="bruteForceFlag" class="flag hidden">&#x1F6A8;</span> <!-- Red Flag Icon -->
-            </div>
-        
-            <!-- DDoS Alert -->
-            <div id="ddosAlertBox" class="alert-box">
-                <h3>DDoS Alerts</h3>
-                <ul id="ddosAlerts"></ul>
-                <span id="ddosFlag" class="flag hidden">&#x1F6A8;</span> <!-- Red Flag Icon -->
-            </div>
-        
-            <!-- Port Scan Alert -->
-            <div id="portScanAlertBox" class="alert-box">
-                <h3>Port Scan Alerts</h3>
-                <ul id="portScanAlerts"></ul>
-                <span id="portScanFlag" class="flag hidden">&#x1F6A8;</span> <!-- Red Flag Icon -->
-            </div>
-        
-            <!-- Spoofing Alert -->
-            <div id="spoofingAlertBox" class="alert-box">
-                <h3>Spoofing Alerts</h3>
-                <ul id="spoofingAlerts"></ul>
-                <span id="spoofingFlag" class="flag hidden">&#x1F6A8;</span> <!-- Red Flag Icon -->
-            </div>
-        
-            <!-- Password Exfiltration Alert -->
-            <div id="passwordExfiltrationAlertBox" class="alert-box">
-                <h3>Password Exfiltration Alerts</h3>
-                <ul id="passwordExfiltrationAlerts"></ul>
-                <span id="passwordExfiltrationFlag" class="flag hidden">&#x1F6A8;</span> <!-- Red Flag Icon -->
-            </div>
+        <!-- Alerts Section -->
+    <div id="alertsSection">
+        <!-- DNS Tunneling Alerts -->
+        <div class="alert-category">
+            <span id="dnsTunnelingFlag" class="alert-flag hidden">
+                <i class="fas fa-flag" style="color: red;"></i>
+            </span>
+            <span class="alert-title">DNS Tunneling Alerts (<span id="dnsTunnelingCount">0</span>)</span>
+            <ul id="dnsTunnelingAlerts" class="alert-list"></ul>
         </div>
-        <!-- Synflood Alert -->
-            <div id="synfloodAlertBox" class="alert-box">
-                <h3>SYN flood attack Alerts</h3>
-                <ul id="synfloodAlerts"></ul>
-                <span id="synfloodFlag" class="flag hidden">&#x1F6A8;</span> <!-- Red Flag Icon -->
-            </div>
-        </div>
-    
 
-        
-        <!-- Modal for alert details -->
-        <div id="alertModal" class="modal">
-            <div class="modal-content">
-                <span class="close">&times;</span>
-                <div id="alertDetails">
-                    <!-- Detailed alert information will be displayed here -->
-                </div>
-            </div>
+        <!-- Brute Force Alerts -->
+        <div class="alert-category">
+            <span id="bruteForceFlag" class="alert-flag hidden">
+                <i class="fas fa-flag" style="color: red;"></i>
+            </span>
+            <span class="alert-title">Brute Force Alerts (<span id="bruteForceCount">0</span>)</span>
+            <ul id="bruteForceAlerts" class="alert-list"></ul>
         </div>
+
+        <!-- DDoS Alerts -->
+        <div class="alert-category">
+            <span id="ddosFlag" class="alert-flag hidden">
+                <i class="fas fa-flag" style="color: red;"></i>
+            </span>
+            <span class="alert-title">DDoS Alerts (<span id="ddosCount">0</span>)</span>
+            <ul id="ddosAlerts" class="alert-list"></ul>
+        </div>
+
+        <!-- Port Scan Alerts -->
+        <div class="alert-category">
+            <span id="portScanFlag" class="alert-flag hidden">
+                <i class="fas fa-flag" style="color: red;"></i>
+            </span>
+            <span class="alert-title">Port Scan Alerts (<span id="portScanCount">0</span>)</span>
+            <ul id="portScanAlerts" class="alert-list"></ul>
+        </div>
+
+        <!-- Spoofing Alerts -->
+        <div class="alert-category">
+            <span id="spoofingFlag" class="alert-flag hidden">
+                <i class="fas fa-flag" style="color: red;"></i>
+            </span>
+            <span class="alert-title">Spoofing Alerts (<span id="spoofingCount">0</span>)</span>
+            <ul id="spoofingAlerts" class="alert-list"></ul>
+        </div>
+
+        <!-- Password Exfiltration Alerts -->
+        <div class="alert-category">
+            <span id="passwordExfiltrationFlag" class="alert-flag hidden">
+                <i class="fas fa-flag" style="color: red;"></i>
+            </span>
+            <span class="alert-title">Password Exfiltration Alerts (<span id="passwordExfiltrationCount">0</span>)</span>
+            <ul id="passwordExfiltrationAlerts" class="alert-list"></ul>
+        </div>
+
+        <!-- SYN Flood Alerts -->
+        <div class="alert-category">
+            <span id="synfloodFlag" class="alert-flag hidden">
+                <i class="fas fa-flag" style="color: red;"></i>
+            </span>
+            <span class="alert-title">SYN Flood Alerts (<span id="synfloodCount">0</span>)</span>
+            <ul id="synfloodAlerts" class="alert-list"></ul>
+        </div>
+
+        <!-- Total Alerts -->
+        <div class="total-alerts">Total Alerts: <span id="totalAlertCount">0</span></div>
+    </div>
+
+    <!-- Alert Modal -->
+    <div id="alertModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="alertDetails"></div>
+        </div>
+    </div>
+
+
         
     </div>
 

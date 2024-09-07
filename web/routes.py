@@ -117,7 +117,6 @@ def configure_routes(app):
             interface=interface_guid,  # Pass formatted GUID for sniffing
             verbose=verbose,
             timeout=timeout,
-            output=None,
             use_db=False,
             capture_file=capture_file_path
         )
@@ -186,19 +185,27 @@ def configure_routes(app):
 
 
     # Assuming 'sniffer' is your PacketSniffer instance
+    from flask import jsonify
+
     @app.route('/detector_alerts')
     def get_detector_alerts():
-        if sniffer:  # Ensure the sniffer instance is valid
+        try:
+            # Collect alerts from your alert manager
             alerts = {
-                "dns_tunneling": sniffer.alert_manager.get_alerts_by_type("dns_tunneling"),
-                "brute_force": sniffer.alert_manager.get_alerts_by_type("brute_force"),
-                "ddos": sniffer.alert_manager.get_alerts_by_type("ddos"),
-                "port_scan": sniffer.alert_manager.get_alerts_by_type("port_scan"),
-                "spoofing": sniffer.alert_manager.get_alerts_by_type("spoofing"),
-                "password_exfiltration": sniffer.alert_manager.get_alerts_by_type("password_exfiltration")
+                'dns_tunneling': sniffer.alert_manager.get_alerts_by_type('dns_tunneling'),
+                'brute_force': sniffer.alert_manager.get_alerts_by_type('brute_force'),
+                'ddos': sniffer.alert_manager.get_alerts_by_type('ddos'),
+                'port_scan': sniffer.alert_manager.get_alerts_by_type('port_scan'),
+                'spoofing': sniffer.alert_manager.get_alerts_by_type('spoofing'),
+                'password_exfiltration': sniffer.alert_manager.get_alerts_by_type('password_exfiltration'),
+                'synflood': sniffer.alert_manager.get_alerts_by_type('synflood')
             }
             return jsonify(alerts)
-        return jsonify({"error": "Sniffer not initialized"})
+
+        except Exception as e:
+            app.logger.error(f"Error fetching detector alerts: {e}")
+            return jsonify({"error": "Failed to fetch alerts"}), 500
+
 
 
 

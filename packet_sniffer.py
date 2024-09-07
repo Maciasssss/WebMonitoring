@@ -29,18 +29,13 @@ import queue
 
 
 class SnifferConfig:
-    def __init__(self, interface, verbose, timeout, output, use_db, capture_file):
+    def __init__(self, interface, verbose, timeout, use_db, capture_file):
         self.handlers = {...}
         self.interface = interface
         self.verbose = verbose
         self.timeout = timeout
-        self.output = output
         self.use_db = use_db
         self.capture_file = capture_file
-        self.total_packets = 0
-        self.echo_request_count = 0
-        self.echo_reply_count = 0
-        self.packets = []
         self.statistics_queue = queue.Queue()  
 
 # packet_sniffer.py
@@ -162,20 +157,6 @@ class PacketSniffer:
         }
         self.config.statistics_queue.put(statistics)
    
-    def packet_filter(packet):
-    # Replace '192.168.55.103' with your machine's IP and exclude HTTP/HTTPS ports (80 and 443)
-        if packet.haslayer(IP):
-            src_ip = packet[IP].src
-            dst_ip = packet[IP].dst
-
-            # Add conditions to exclude your app's traffic
-            if (src_ip == "192.168.55.103" or dst_ip == "192.168.55.103") and \
-            (packet.haslayer(TCP) and (packet[TCP].sport == 80 or packet[TCP].dport == 80 or 
-                                        packet[TCP].sport == 443 or packet[TCP].dport == 443)):
-                return False  # Skip processing this packet
-
-        return True  # Process all other packets
-    
     def start_sniffing(self):
         if not self.config.interface:
             raise ValueError("No valid network interface provided.")
@@ -227,13 +208,7 @@ class PacketSniffer:
                         "Flags": packet.get('flags', 'N/A')
                     })
 
-
-
     def get_statistics(self):
         if not self.config.statistics_queue.empty():
             return self.config.statistics_queue.get()
         return {}
-
-
-
-#exclude ip and upd packets form working app
