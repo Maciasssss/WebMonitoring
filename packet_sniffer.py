@@ -36,7 +36,6 @@ class SnifferConfig:
         self.timeout = timeout
         self.use_db = use_db
         self.capture_file = capture_file
-        self.statistics_queue = queue.Queue()  
 
 # packet_sniffer.py
 class PacketSniffer:
@@ -155,7 +154,6 @@ class PacketSniffer:
             'total_bytes_sent': self.total_bytes_sent,
             'total_bytes_received': self.total_bytes_received,
         }
-        self.config.statistics_queue.put(statistics)
    
     def start_sniffing(self):
         if not self.config.interface:
@@ -209,6 +207,18 @@ class PacketSniffer:
                     })
 
     def get_statistics(self):
-        if not self.config.statistics_queue.empty():
-            return self.config.statistics_queue.get()
-        return {}
+        return {
+            'total_packets': self.total_packets,
+            'echo_request_count': self.echo_request_count,
+            'echo_reply_count': self.echo_reply_count,
+            'arp_count': self.arp_count,
+            'tcp_count': self.tcp_count,
+            'udp_count': self.udp_count,
+            'http_count': self.http_count,
+            'dns_count': self.dns_count,
+            'icmp_count': self.icmp_count,
+            'ip_count': self.ip_count,
+            'ipv6_count': self.ipv6_count,
+            'total_bytes_sent': self.total_bytes_sent,
+            'total_bytes_received': self.total_bytes_received,
+        }

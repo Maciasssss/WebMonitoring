@@ -9,6 +9,12 @@
     <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script src="{{ url_for('static', filename='app.js') }}"></script>
+    <script src="{{ url_for('static', filename='alertManager.js') }}"></script>
+    <script src="{{ url_for('static', filename='tableManager.js') }}"></script>
+    <script src="{{ url_for('static', filename='fetchService.js') }}"></script>
+    <script src="{{ url_for('static', filename='modalManager.js') }}"></script>
+    
+
 </head>
 <body>
     <h1>Configure and Start Packet Sniffer</h1>
@@ -44,93 +50,80 @@
     </form>
 
     <h2>Sniffer Statistics</h2>
-    <div id="statistics">
-        <!-- Statistics will be populated by JavaScript -->
+    <div id="statisticstableContainer">
+        <table id="statisticsTable" class="display">
+            <thead>
+                <tr>
+                    <th>Total Packets</th>
+                    <th>Echo Request Count</th>
+                    <th>Echo Reply Count</th>
+                    <th>ARP Count</th>
+                    <th>TCP Count</th>
+                    <th>UDP Count</th>
+                    <th>HTTP Count</th>
+                    <th>DNS Count</th>
+                    <th>ICMP Count</th>
+                    <th>IP Count</th>
+                    <th>IPv6 Count</th>
+                    <th>Total Bytes Sent</th>
+                    <th>Total Bytes Received</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Stats will be dynamically populated here -->
+            </tbody>
+        </table>
     </div>
 
-        <!-- Alerts Section -->
-    <div id="alertsSection">
-        <!-- DNS Tunneling Alerts -->
-        <div class="alert-category">
-            <span id="dnsTunnelingFlag" class="alert-flag hidden">
-                <i class="fas fa-flag" style="color: red;"></i>
-            </span>
-            <span class="alert-title">DNS Tunneling Alerts (<span id="dnsTunnelingCount">0</span>)</span>
-            <ul id="dnsTunnelingAlerts" class="alert-list"></ul>
-        </div>
 
-        <!-- Brute Force Alerts -->
-        <div class="alert-category">
-            <span id="bruteForceFlag" class="alert-flag hidden">
-                <i class="fas fa-flag" style="color: red;"></i>
-            </span>
-            <span class="alert-title">Brute Force Alerts (<span id="bruteForceCount">0</span>)</span>
-            <ul id="bruteForceAlerts" class="alert-list"></ul>
+    <h2>Attack Alerts</h2>
+    <div id="alertGridContainer" class="alert-grid-container">
+        <div class="alert-box" id="dns-tunneling">
+            <h3>DNS Tunneling</h3>
+            <ul class="attack-list"></ul>
         </div>
-
-        <!-- DDoS Alerts -->
-        <div class="alert-category">
-            <span id="ddosFlag" class="alert-flag hidden">
-                <i class="fas fa-flag" style="color: red;"></i>
-            </span>
-            <span class="alert-title">DDoS Alerts (<span id="ddosCount">0</span>)</span>
-            <ul id="ddosAlerts" class="alert-list"></ul>
+        <div class="alert-box" id="brute-force">
+            <h3>Brute Force</h3>
+            <ul class="attack-list"></ul>
         </div>
-
-        <!-- Port Scan Alerts -->
-        <div class="alert-category">
-            <span id="portScanFlag" class="alert-flag hidden">
-                <i class="fas fa-flag" style="color: red;"></i>
-            </span>
-            <span class="alert-title">Port Scan Alerts (<span id="portScanCount">0</span>)</span>
-            <ul id="portScanAlerts" class="alert-list"></ul>
+        <div class="alert-box" id="ddos">
+            <h3>DDoS</h3>
+            <ul class="attack-list"></ul>
         </div>
-
-        <!-- Spoofing Alerts -->
-        <div class="alert-category">
-            <span id="spoofingFlag" class="alert-flag hidden">
-                <i class="fas fa-flag" style="color: red;"></i>
-            </span>
-            <span class="alert-title">Spoofing Alerts (<span id="spoofingCount">0</span>)</span>
-            <ul id="spoofingAlerts" class="alert-list"></ul>
+        <div class="alert-box" id="port-scan">
+            <h3>Port Scan</h3>
+            <ul class="attack-list"></ul>
         </div>
-
-        <!-- Password Exfiltration Alerts -->
-        <div class="alert-category">
-            <span id="passwordExfiltrationFlag" class="alert-flag hidden">
-                <i class="fas fa-flag" style="color: red;"></i>
-            </span>
-            <span class="alert-title">Password Exfiltration Alerts (<span id="passwordExfiltrationCount">0</span>)</span>
-            <ul id="passwordExfiltrationAlerts" class="alert-list"></ul>
+        <div class="alert-box" id="spoofing">
+            <h3>Spoofing</h3>
+            <ul class="attack-list"></ul>
         </div>
-
-        <!-- SYN Flood Alerts -->
-        <div class="alert-category">
-            <span id="synfloodFlag" class="alert-flag hidden">
-                <i class="fas fa-flag" style="color: red;"></i>
-            </span>
-            <span class="alert-title">SYN Flood Alerts (<span id="synfloodCount">0</span>)</span>
-            <ul id="synfloodAlerts" class="alert-list"></ul>
+        <div class="alert-box" id="password-exfiltration">
+            <h3>Password Exfiltration</h3>
+            <ul class="attack-list"></ul>
         </div>
-
-        <!-- Total Alerts -->
-        <div class="total-alerts">Total Alerts: <span id="totalAlertCount">0</span></div>
+        <div class="alert-box" id="synflood">
+            <h3>Synflood</h3>
+            <ul class="attack-list"></ul>
+        </div>
     </div>
 
-    <!-- Alert Modal -->
+    <!-- Modal for Alert Details -->
     <div id="alertModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
-            <div id="alertDetails"></div>
+            <h3>Attack Details</h3>
+            <div id="alertDetails">
+                <!-- Detailed alert information will be displayed here -->
+            </div>
         </div>
     </div>
 
 
-        
-    </div>
 
+
+    
     <h2>Flow Statistics</h2>
-
 
     <!-- Flow Statistics Table -->
     <div id="flowStatisticsTableContainer">
