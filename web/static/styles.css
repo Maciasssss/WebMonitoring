@@ -16,8 +16,32 @@ input[type="text"] {
 }
 
 
+.alert-grid-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 3 columns */
+    gap: 10px;
+    padding: 10px;
+}
 
+.alert-box {
+    border: 2px solid black;
+    padding: 15px;
+    text-align: left;
+}
 
+.attack-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+.attack-list li {
+    margin: 5px 0;
+}
+
+.details-button {
+    padding: 5px 10px;
+    cursor: pointer;
+}
 
 /* Basic CSS for Modal */
 
