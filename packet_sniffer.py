@@ -97,29 +97,16 @@ class PacketSniffer:
             for detector_key, detector in self.detectors.items():
                 alert = detector.monitor_traffic(packet)
                 if alert:
-                    # Pass the correct type to the alert manager
-                    if detector_key == "DDoS":
-                        self.alert_manager.add_alert(alert["ip"], alert["details"], "ddos")
-                    elif detector_key == "PortScan":
-                        self.alert_manager.add_alert(alert["ip"], alert["details"], "port_scan")
-                    elif detector_key == "BruteForce":
-                        self.alert_manager.add_alert(alert["ip"], alert["details"], "brute_force")
-                    elif detector_key == "DNStunneling":
-                        self.alert_manager.add_alert(alert["ip"], alert["details"], "dns_tunneling")
-                    elif detector_key == "Passfiltration":
-                        self.alert_manager.add_alert(alert["ip"], alert["details"], "password_exfiltration")
-                    elif detector_key == "Spoofing":
-                        self.alert_manager.add_alert(alert["ip"], alert["details"], "spoofing")
-                    elif detector_key == "Synflood":
-                        self.alert_manager.add_alert(alert["ip"], alert["details"], "synflood")
+                    # Now pass the full alert object directly
+                    self.alert_manager.add_alert(alert)
 
-            # Monitor traffic
-            for monitor in self.monitors.values():
-                monitor.monitor_traffic(packet)
-            self.total_packets += 1
-            self.start_capture(self.packets_info)
-            self.update_statistics()
-            pass
+                # Monitor traffic
+                for monitor in self.monitors.values():
+                    monitor.monitor_traffic(packet)
+                self.total_packets += 1
+                self.start_capture(self.packets_info)
+                self.update_statistics()
+                pass
 
     def get_flow_statistics(self):
         # Gather flow statistics from your monitors

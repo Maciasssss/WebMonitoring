@@ -32,6 +32,7 @@ class PacketTableManager extends TableManager {
             { title: "Identifier" },
             { title: "Sequence" }
         ]);
+       
     }
 
     populatePackets(packets) {
@@ -49,6 +50,17 @@ class PacketTableManager extends TableManager {
             packet.identifier || 'N/A',
             packet.sequence || 'N/A'
         ]);
+         // Attach click event to rows after data is populated
+        $('#packetTable tbody').off('click').on('click', 'tr', (event) => {
+            const rowData = this.table.row(event.currentTarget).data();
+            console.log("Row clicked:", rowData); // Log row data when clicked
+
+            if (rowData) {
+                ModalManager.displayPacketDetails(rowData); // Pass packet data to modal
+            } else {
+                console.error("No row data available for this row.");
+            }
+        });
     }
 }
 class StatisticsTableManager extends TableManager {

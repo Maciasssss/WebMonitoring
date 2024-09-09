@@ -1,5 +1,5 @@
 from collections import defaultdict
-from datetime import datetime, timedelta  # Correct import for timedelta
+from datetime import datetime, timedelta
 from scapy.all import TCP, IP
 from .detector_strategy import DetectorStrategy
 
@@ -12,18 +12,26 @@ class SynFloodDetector(DetectorStrategy):
     def monitor_traffic(self, packet):
         if packet.haslayer(TCP) and packet[TCP].flags == 'S':  # SYN packet
             src_ip = packet[IP].src
+            dst_port = packet[TCP].dport  # Extract the destination port
+            protocol = "TCP"
             timestamp = datetime.now()
 
-            # Remove old requests outside the time window
+            # Remove old SYN requests that are outside the time window
             self.syn_requests[src_ip] = [ts for ts in self.syn_requests[src_ip] if ts > timestamp - timedelta(seconds=self.time_window)]
             self.syn_requests[src_ip].append(timestamp)
 
-            # Detect potential SYN flood
+            # Detect potential SYN flood attack
             if len(self.syn_requests[src_ip]) > self.syn_threshold:
+                severity = "High" if len(self.syn_requests[src_ip]) > 200 else "Medium"
+
                 return {
                     "ip": src_ip,
-                    "type": "SYN Flood",
+                    "type": "SYN_Flood",
                     "details": f"Potential SYN flood attack detected from {src_ip} - {len(self.syn_requests[src_ip])} SYN requests in {self.time_window} seconds",
-                    "timestamp": timestamp
+                    "timestamp": timestamp,
+                    "severity": severity,
+                    "port": dst_port,
+                    "protocol": protocol,
+                    "possible_fixes": "Consider enabling SYN cookies, rate limiting, or using firewall rules to mitigate SYN flood attacks."
                 }
         return None  # No alert if nothing is detected
