@@ -115,16 +115,23 @@ class FlowStatisticsTableManager extends TableManager {
         ]);
     }
 
+    // Utility function to safely get stats with default value
+    getStatValue(stat, defaultValue = '0.00', isFixed = true) {
+        return stat !== undefined ? (isFixed ? stat.toFixed(2) : stat) : defaultValue;
+    }
+
     populateFlowStatistics(flowStats) {
         this.updateTable(Object.keys(flowStats), flow => [
             flow,
-            flowStats[flow].throughput.toFixed(2),
-            flowStats[flow].packet_delay.toFixed(2),
-            flowStats[flow].jitter.toFixed(2),
-            flowStats[flow].packet_loss.toFixed(2),
-            flowStats[flow].rtt.toFixed(2),
-            flowStats[flow].ttl,
-            flowStats[flow].bandwidth_utilization.toFixed(2)
+            this.getStatValue(flowStats[flow].throughput),
+            this.getStatValue(flowStats[flow].packet_delay),
+            this.getStatValue(flowStats[flow].jitter),
+            this.getStatValue(flowStats[flow].packet_loss),
+            this.getStatValue(flowStats[flow].rtt),
+            this.getStatValue(flowStats[flow].ttl, 'N/A', false),  
+            this.getStatValue(flowStats[flow].bandwidth)
         ]);
     }
 }
+
+

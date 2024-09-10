@@ -1,8 +1,10 @@
 import os
 import threading
 import logging
-from packet_sniffer import PacketSniffer, SnifferConfig
+from packet_sniffer import PacketSniffer
+from sniffer_config import SnifferConfig
 from scapy.arch.windows import get_windows_if_list
+from utils.packet_capture import PacketCapture
 
 class SnifferService:
     def __init__(self):
