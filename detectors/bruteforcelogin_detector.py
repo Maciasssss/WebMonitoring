@@ -14,6 +14,8 @@ class BruteForceLoginDetector:
 
             if "POST" in payload and "/login" in payload:  # Check for HTTP POST requests to login endpoint
                 src_ip = packet[IP].src
+                dst_port = packet[TCP].dport  # Destination port
+                protocol = "TCP"  # Since it's using TCP
                 timestamp = datetime.now()
 
                 # Check for login failure by identifying relevant status codes in the response
@@ -26,10 +28,16 @@ class BruteForceLoginDetector:
 
                     # Check if the number of failed attempts exceeds the threshold
                     if len(self.failed_login_attempts[src_ip]) > self.attempt_threshold:
+                        severity = "High" if len(self.failed_login_attempts[src_ip]) > 10 else "Medium"
+
                         return {
                             "ip": src_ip,
-                            "type": "Brute Force Login",
+                            "type": "Brute_Force_Login",
                             "details": f"{len(self.failed_login_attempts[src_ip])} failed login attempts detected from {src_ip}",
-                            "timestamp": timestamp
+                            "timestamp": timestamp,
+                            "severity": severity,
+                            "port": dst_port,
+                            "protocol": protocol,
+                            "possible_fixes": "Consider locking the account or requiring CAPTCHA after multiple failed login attempts."
                         }
         return None  # No alert if nothing is detected

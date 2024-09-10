@@ -32,6 +32,7 @@ class PacketTableManager extends TableManager {
             { title: "Identifier" },
             { title: "Sequence" }
         ]);
+       
     }
 
     populatePackets(packets) {
@@ -49,6 +50,17 @@ class PacketTableManager extends TableManager {
             packet.identifier || 'N/A',
             packet.sequence || 'N/A'
         ]);
+         // Attach click event to rows after data is populated
+        $('#packetTable tbody').off('click').on('click', 'tr', (event) => {
+            const rowData = this.table.row(event.currentTarget).data();
+            console.log("Row clicked:", rowData); // Log row data when clicked
+
+            if (rowData) {
+                ModalManager.displayPacketDetails(rowData); // Pass packet data to modal
+            } else {
+                console.error("No row data available for this row.");
+            }
+        });
     }
 }
 class StatisticsTableManager extends TableManager {
@@ -103,16 +115,23 @@ class FlowStatisticsTableManager extends TableManager {
         ]);
     }
 
+    // Utility function to safely get stats with default value
+    getStatValue(stat, defaultValue = '0.00', isFixed = true) {
+        return stat !== undefined ? (isFixed ? stat.toFixed(2) : stat) : defaultValue;
+    }
+
     populateFlowStatistics(flowStats) {
         this.updateTable(Object.keys(flowStats), flow => [
             flow,
-            flowStats[flow].throughput.toFixed(2),
-            flowStats[flow].packet_delay.toFixed(2),
-            flowStats[flow].jitter.toFixed(2),
-            flowStats[flow].packet_loss.toFixed(2),
-            flowStats[flow].rtt.toFixed(2),
-            flowStats[flow].ttl,
-            flowStats[flow].bandwidth_utilization.toFixed(2)
+            this.getStatValue(flowStats[flow].throughput),
+            this.getStatValue(flowStats[flow].packet_delay),
+            this.getStatValue(flowStats[flow].jitter),
+            this.getStatValue(flowStats[flow].packet_loss),
+            this.getStatValue(flowStats[flow].rtt),
+            this.getStatValue(flowStats[flow].ttl, 'N/A', false),  
+            this.getStatValue(flowStats[flow].bandwidth)
         ]);
     }
 }
+
+

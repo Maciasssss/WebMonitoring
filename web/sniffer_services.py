@@ -1,8 +1,10 @@
 import os
 import threading
 import logging
-from packet_sniffer import PacketSniffer, SnifferConfig
+from packet_sniffer import PacketSniffer
+from sniffer_config import SnifferConfig
 from scapy.arch.windows import get_windows_if_list
+from utils.packet_capture import PacketCapture
 
 class SnifferService:
     def __init__(self):
@@ -67,17 +69,18 @@ class SnifferService:
         
         try:
             return {
-                'dns_tunneling': self.sniffer.alert_manager.get_alerts_by_type('dns_tunneling'),
-                'brute_force': self.sniffer.alert_manager.get_alerts_by_type('brute_force'),
-                'ddos': self.sniffer.alert_manager.get_alerts_by_type('ddos'),
-                'port_scan': self.sniffer.alert_manager.get_alerts_by_type('port_scan'),
-                'spoofing': self.sniffer.alert_manager.get_alerts_by_type('spoofing'),
-                'password_exfiltration': self.sniffer.alert_manager.get_alerts_by_type('password_exfiltration'),
-                'synflood': self.sniffer.alert_manager.get_alerts_by_type('synflood')
+                'DNS_Tunneling': self.sniffer.alert_manager.get_alerts_by_type('DNS_Tunneling'),
+                'Brute_Force_Login': self.sniffer.alert_manager.get_alerts_by_type('Brute_Force_Login'),
+                'DDoS_Attack': self.sniffer.alert_manager.get_alerts_by_type('DDoS_Attack'),
+                'Port_Scan': self.sniffer.alert_manager.get_alerts_by_type('Port_Scan'),
+                'Spoofing': self.sniffer.alert_manager.get_alerts_by_type('Spoofing'),
+                'Password_Exfiltration': self.sniffer.alert_manager.get_alerts_by_type('Password_Exfiltration'),
+                'SYN_Flood': self.sniffer.alert_manager.get_alerts_by_type('SYN_Flood')
             }
         except Exception as e:
             logging.error(f"Error fetching detector alerts: {e}")
             return None
+
 
     def get_capture_file(self):
         if self.sniffer and self.sniffer.capture_file and os.path.exists(self.sniffer.capture_file):

@@ -7,8 +7,9 @@ class AlertManager:
     def __init__(self):
         self.alerts = []
 
-    def add_alert(self, ip, details, alert_type):
-        self.alerts.append({"ip": ip, "details": details, "type": alert_type})
+    # Modify add_alert to accept an alert object (dictionary)
+    def add_alert(self, alert):
+        self.alerts.append(alert)
 
     def get_alerts_by_type(self, alert_type):
         return [alert for alert in self.alerts if alert["type"] == alert_type]
