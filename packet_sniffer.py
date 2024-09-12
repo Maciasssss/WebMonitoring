@@ -78,7 +78,7 @@ class PacketSniffer:
         self.total_bytes_received = 0
         self.icmp_count = 0 
         self.lock = threading.Lock()
-        self.sniffing = True
+        self.sniffing = False
         self.packets = {}
         self.alert_manager = AlertManager()
         self.packet_capture = PacketCapture(self.capture_file)
@@ -146,14 +146,43 @@ class PacketSniffer:
             'total_bytes_sent': self.total_bytes_sent,
             'total_bytes_received': self.total_bytes_received,
         }
-   
+
+    def build_filter_string(self,filter_options):
+        filters = []
+
+        if filter_options.get('protocol'):
+            filters.append(f"{filter_options['protocol']}")
+
+        if filter_options.get('src_ip'):
+            filters.append(f"src host {filter_options['src_ip']}")
+
+        if filter_options.get('dst_ip'):
+            filters.append(f"dst host {filter_options['dst_ip']}")
+
+        if filter_options.get('src_port'):
+            filters.append(f"src port {filter_options['src_port']}")
+
+        if filter_options.get('dst_port'):
+            filters.append(f"dst port {filter_options['dst_port']}")
+
+        if filter_options.get('custom_filter'):
+            filters.append(f"{filter_options['custom_filter']}")
+
+        return " and ".join(filters)
+
     def start_sniffing(self):
         if not self.config.interface:
             raise ValueError("No valid network interface provided.")
         self.sniffing = True
+
+        # Build the filter string dynamically
+        filter_string = self.build_filter_string(self.config.filter_options)
+        
+        # Use the filter in sniff
         sniff(iface=self.config.interface, prn=self.handle_packet, store=False,
-                filter="not (host 192.168.55.103 and (tcp port 80 or tcp port 443))", 
-                timeout=self.config.timeout, stop_filter=lambda x: not self.sniffing)
+            filter=filter_string, 
+            timeout=self.config.timeout, stop_filter=lambda x: not self.sniffing)
+
 
     def stop_sniffing(self):
         self.sniffing = False

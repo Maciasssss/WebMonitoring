@@ -51,27 +51,65 @@ $(document).ready(function() {
         clearInterval(captureCheckInterval); // Stop checking capture file
         intervals = [];
     }
-
-    // Form submission via AJAX
     $('#startCaptureForm').submit(function(event) {
         event.preventDefault();
-
+    
         if (!captureStarted) {
             captureStarted = true;
-
+    
             const formData = $(this).serialize();
-
+    
             $.post('/start_sniffer', formData)
-                .done(function() {
-                    alert('Packet sniffer started!');
-                    startPolling();
+                .done(function(response) {
+                    alert(response.status);  // Show success message
+                    startPolling();  // Start polling after sniffer is started
                 })
-                .fail(function() {
-                    alert('Failed to start the sniffer.');
-                    captureStarted = false;
+                .fail(function(response) {
+                    alert(response.responseJSON.error);  // Show error message
+                    captureStarted = false;  // Reset captureStarted if failed
                 });
         } else {
             alert('Sniffer is already running.');
         }
     });
+
+    $('#stopSnifferForm').submit(function(event) {
+        event.preventDefault();
+    
+        if (captureStarted) {
+            $.post('/stop_sniffer')
+                .done(function(response) {
+                    alert(response.status);  // Show success message
+    
+                    // Ask the user if they want to reset the page or keep the current state
+                    let resetDecision = confirm("Do you want to reset the page and clear all settings?");
+    
+                    if (resetDecision) {
+                        // If the user chooses to reset, redirect to the index page
+                        window.location.href = '/';
+                    } else {
+                        // If the user chooses not to reset, simply stop the polling and keep the page as is
+                        stopPolling();  // Stop the current polling
+                        captureStarted = false;  // Reset captureStarted flag
+                        
+                        // Show the refresh button for manual reset option
+                        $('#refreshPageButton').show();
+                    }
+                })
+                .fail(function(response) {
+                    alert(response.responseJSON.error);  // Show error message
+                });
+        } else {
+            alert('No sniffer is currently running.');
+        }
+    });
+    
+    // Refresh the page when the refresh button is clicked
+    $('#refreshPageButton').click(function() {
+        location.reload();  // Refresh the page, resetting everything
+    });
+    
+    
+    
+
 });

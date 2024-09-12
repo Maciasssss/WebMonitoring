@@ -1,4 +1,4 @@
-from flask import jsonify, render_template, request, send_file, redirect, url_for
+from flask import jsonify, render_template, request, send_file, redirect, url_for,flash
 from .sniffer_services import SnifferService
 import logging
 
@@ -22,21 +22,43 @@ def configure_routes(app):
             logging.error(f"Selected interface {selected_friendly_name} not found.")
             return jsonify({"error": "Selected interface not found"}), 400
 
-        verbose = 'verbose' in request.form
         timeout = int(request.form['timeout'])
         capture_file = request.form.get('capture_file')
 
+        # Gather filter options from the form
+        protocol = request.form.get('protocol', None)
+        src_ip = request.form.get('src_ip', None)
+        dst_ip = request.form.get('dst_ip', None)
+        src_port = request.form.get('src_port', None)
+        dst_port = request.form.get('dst_port', None)
+        custom_filter = request.form.get('custom_filter', None)
+
+        filter_options = {
+            'protocol': protocol,
+            'src_ip': src_ip,
+            'dst_ip': dst_ip,
+            'src_port': src_port,
+            'dst_port': dst_port,
+            'custom_filter': custom_filter
+        }
+
         try:
-            sniffer_service.start_sniffer(interface_guid, verbose, timeout, capture_file)
+            sniffer_service.start_sniffer(interface_guid, timeout, capture_file, filter_options)
+            return jsonify({"status": "Packet sniffer started successfully!"}), 200
         except Exception as e:
+            logging.error(f"Error starting sniffer: {str(e)}")
             return jsonify({"error": str(e)}), 500
 
-        return jsonify({"status": "sniffer started"})
 
     @app.route('/stop_sniffer', methods=['POST'])
     def stop_sniffer():
-        sniffer_service.stop_sniffer()
-        return redirect(url_for('index'))
+        try:
+            sniffer_service.stop_sniffer()
+            return jsonify({"status": "Packet sniffer stopped successfully!"}), 200
+        except Exception as e:
+            logging.error(f"Error stopping sniffer: {str(e)}")
+            return jsonify({"error": str(e)}), 500
+
 
     @app.route('/statistics')
     def get_statistics():

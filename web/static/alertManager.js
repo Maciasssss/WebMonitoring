@@ -1,13 +1,13 @@
 class AlertManager {
     constructor() {
         this.alertsMap = {
-            'DNS_Tunneling': { attacks: [], elementId: '#dns-tunneling' },
-            'Brute_Force_Login': { attacks: [], elementId: '#brute-force' },
-            'DDoS_Attack': { attacks: [], elementId: '#ddos' },
-            'Port_Scan': { attacks: [], elementId: '#port-scan' },
-            'Spoofing': { attacks: [], elementId: '#spoofing' },
-            'Password_Exfiltration': { attacks: [], elementId: '#password-exfiltration' },
-            'SYN_Flood': { attacks: [], elementId: '#synflood' }
+            'DNS_Tunneling': { attacks: [], currentIndex: 0, elementId: '#dns-tunneling' },
+            'Brute_Force_Login': { attacks: [], currentIndex: 0, elementId: '#brute-force' },
+            'DDoS_Attack': { attacks: [], currentIndex: 0, elementId: '#ddos' },
+            'Port_Scan': { attacks: [], currentIndex: 0, elementId: '#port-scan' },
+            'Spoofing': { attacks: [], currentIndex: 0, elementId: '#spoofing' },
+            'Password_Exfiltration': { attacks: [], currentIndex: 0, elementId: '#password-exfiltration' },
+            'SYN_Flood': { attacks: [], currentIndex: 0, elementId: '#synflood' }
         };
 
         this.attachGlobalEventHandlers();
@@ -30,47 +30,72 @@ class AlertManager {
     }
 
     updateAlertBox(alert) {
-        const alertType = alert.type
+        const alertType = alert.type;
         const alertData = this.alertsMap[alertType];
-    
+
         if (alertData) {
             let existingAttack = alertData.attacks.find(a => a.ip === alert.ip);
-    
-            // Make sure the alert contains all necessary fields
+
+            // Ensure the alert contains all necessary fields
             alert.severity = alert.severity || 'N/A';
             alert.port = alert.port || 'N/A';
             alert.protocol = alert.protocol || 'N/A';
             alert.possible_fixes = alert.possible_fixes || 'N/A';
-    
+
             if (existingAttack) {
                 existingAttack.counter++;
-                this.updateAttackList(alertData, alertType);
+                this.updateAlertCounter(existingAttack, alertType);
             } else {
                 alert.counter = 1; // Initialize counter if it's a new attack
                 alertData.attacks.push(alert);
-                this.updateAttackList(alertData, alertType);
+                if (alertData.attacks.length === 1) {
+                    this.showCurrentAlert(alertType);  // Show the alert if it's the first one
+                }
             }
         }
     }
-    
 
-    updateAttackList(alertData, alertType) {
+    showCurrentAlert(alertType) {
+        const alertData = this.alertsMap[alertType];
         const alertBox = $(alertData.elementId);
         const attackList = alertBox.find('.attack-list');
-        attackList.empty();
+        const currentIndex = alertData.currentIndex;
 
-        alertData.attacks.forEach(attack => {
+        if (alertData.attacks.length > 0) {
+            // Get the current alert to display
+            const currentAttack = alertData.attacks[currentIndex];
+            attackList.empty(); // Ensure only one alert is shown
+
             const listItem = $(`
                 <li>
-                    <p><strong>IP:</strong> ${attack.ip} - <strong>Counter:</strong> ${attack.counter}</p>
-                    <button class="details-button" data-type="${alertType}" data-ip="${attack.ip}">View Details</button>
+                    <p><strong>IP:</strong> ${currentAttack.ip} - <strong class="alert-counter">Counter:</strong> ${currentAttack.counter}</p>
+                    <p><strong>Severity:</strong> ${currentAttack.severity}</p>
+                    <button class="details-button" data-type="${alertType}" data-ip="${currentAttack.ip}">View Details</button>
+                    <button class="previous-alert-button" data-type="${alertType}"><- Previous</button>
+                    <button class="next-alert-button" data-type="${alertType}">Next -></button>
                 </li>
             `);
             attackList.append(listItem);
-        });
+        } else {
+            attackList.empty();
+        }
+    }
+
+    updateAlertCounter(attack, alertType) {
+        const alertData = this.alertsMap[alertType];
+        const alertBox = $(alertData.elementId);
+        const currentAttackIndex = alertData.currentIndex;
+
+        // Only update the counter for the currently displayed alert
+        if (alertData.attacks[currentAttackIndex].ip === attack.ip) {
+            const attackList = alertBox.find('.attack-list');
+            const counterElement = attackList.find('.alert-counter');
+            counterElement.text(`Counter: ${attack.counter}`);
+        }
     }
 
     attachGlobalEventHandlers() {
+        // View details handler
         $(document).on('click', '.details-button', function() {
             const type = $(this).data('type');
             const ip = $(this).data('ip');
@@ -82,6 +107,32 @@ class AlertManager {
                 if (attackDetails) {
                     ModalManager.displayAlertDetails(attackDetails);
                 }
+            }
+        });
+
+        // Next alert handler
+        $(document).on('click', '.next-alert-button', function() {
+            const type = $(this).data('type');
+            const alertManager = window.alertManager;
+            const alertData = alertManager.alertsMap[type];
+
+            if (alertData) {
+                // Increment the index and wrap around if needed
+                alertData.currentIndex = (alertData.currentIndex + 1) % alertData.attacks.length;
+                alertManager.showCurrentAlert(type);
+            }
+        });
+
+        // Previous alert handler
+        $(document).on('click', '.previous-alert-button', function() {
+            const type = $(this).data('type');
+            const alertManager = window.alertManager;
+            const alertData = alertManager.alertsMap[type];
+
+            if (alertData) {
+                // Decrement the index and wrap around if needed
+                alertData.currentIndex = (alertData.currentIndex - 1 + alertData.attacks.length) % alertData.attacks.length;
+                alertManager.showCurrentAlert(type);
             }
         });
     }

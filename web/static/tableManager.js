@@ -129,7 +129,7 @@ class FlowStatisticsTableManager extends TableManager {
             this.getStatValue(flowStats[flow].packet_loss),
             this.getStatValue(flowStats[flow].rtt),
             this.getStatValue(flowStats[flow].ttl, 'N/A', false),  
-            this.getStatValue(flowStats[flow].bandwidth)
+            this.getStatValue(flowStats[flow].bandwidth_utilization)
         ]);
     }
 }

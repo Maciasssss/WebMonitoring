@@ -17,37 +17,100 @@
 
 </head>
 <body>
-    <h1>Configure and Start Packet Sniffer</h1>
-    <form id="startCaptureForm" action="/start_sniffer" method="post">
-        <label for="interface">Select Interface:</label>
-        <select name="interface" id="interface">
-            {% for interface in interfaces %}
-                <option value="{{ interface.name }}">{{ interface.name }} ({{ interface.ip }})</option>
-            {% endfor %}
-        </select><br><br>
-
-        <label for="timeout">Timeout (seconds):</label>
-        <input type="number" id="timeout" name="timeout" value="300"><br><br>
-
-        <label for="verbose">Verbose:</label>
-        <input type="checkbox" id="verbose" name="verbose"><br><br>
-
-        <!-- Input for selecting a file location -->
-        <label for="capture_file">Enter File Name to Save Packets (with extension):</label>
-        <input type="text" id="capture_file" name="capture_file" placeholder="e.g., capture.csv"><br><br>
-
+    <div class="container">
+        <h1>Configure and Start Packet Sniffer</h1>
+    
+        <!-- Form for Starting Sniffer -->
+        <form id="startCaptureForm" action="/start_sniffer" method="post" class="sniffer-form">
+            <div class="form-group">
+                <label for="interface">Select Interface:</label>
+                <select name="interface" id="interface">
+                    {% for interface in interfaces %}
+                        <option value="{{ interface.name }}">{{ interface.name }} ({{ interface.ip }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+    
+            <div class="form-group">
+                <label for="protocol">Protocol:</label>
+                <select name="protocol" id="protocol">
+                    <option value="">Any</option>
+                    <option value="tcp">TCP</option>
+                    <option value="udp">UDP</option>
+                    <option value="icmp">ICMP</option>
+                    <option value="ip">IP</option>
+                    <option value="ipv6">IPV6</option>
+                    <option value="arp">ARP</option>
+                </select>
+            </div>
+    
+            <div class="form-group">
+                <label for="src_ip">Source IP:</label>
+                <input type="text" name="src_ip" id="src_ip">
+            </div>
+    
+            <div class="form-group">
+                <label for="dst_ip">Destination IP:</label>
+                <input type="text" name="dst_ip" id="dst_ip">
+            </div>
+    
+            <div class="form-group">
+                <label for="src_port">Source Port:</label>
+                <input type="text" name="src_port" id="src_port">
+            </div>
+    
+            <div class="form-group">
+                <label for="dst_port">Destination Port:</label>
+                <input type="text" name="dst_port" id="dst_port" placeholder="80 for HTTP, 443 for HTTPS, 53 for DNS">
+            </div>
+    
+            <div class="form-group">
+                <label for="custom_filter">Custom Filter (BPF Syntax):</label>
+                <input type="text" name="custom_filter" id="custom_filter">
+            </div>
+    
+            <div class="form-group">
+                <label for="timeout">Timeout (seconds):</label>
+                <input type="number" id="timeout" name="timeout" value="300">
+            </div>
+    
+            <div class="form-group">
+                <label for="capture_file">Enter File Name to Save Packets (with extension):</label>
+                <input type="text" id="capture_file" name="capture_file" placeholder="e.g., capture.csv">
+            </div>
+    
+            <!-- Buttons Container (Flexbox layout for buttons) -->
+            <div class="buttons-container">
+                <!-- Start Sniffer Button -->
+                <div class="button-wrapper">
+                    <form id="startCaptureForm" action="/start_sniffer" method="post"class="sniffer-form">
+                        <input type="submit"  value="Start Sniffer" class="primary-button">
+                    </form>
+                </div>
+    
+                <!-- Stop Sniffer Button -->
+                <div class="button-wrapper">
+                    <form id="stopSnifferForm" action="/stop_sniffer" method="post" class="sniffer-form">
+                        <input type="submit" value="Stop Sniffer" class="secondary-button">
+                    </form>
+                </div>
+    
+                <!-- Refresh Page Button -->
+                <div class="button-wrapper">
+                    <button id="refreshPageButton" style="display:none;" class="primary-button">
+                        <img src="{{ url_for('static', filename='reload_icon.png') }}" alt="Reload Icon"> Refresh Page
+                    </button>
+                </div>
+            </div>
+        </form>
+    
         <!-- Download Button (Initially hidden) -->
         <div id="downloadContainer" style="display: none;">
             <h3>Download Capture File:</h3>
             <a href="/download_capture" class="button" id="downloadButton">Download File</a>
         </div>
-
-        <input type="submit" id="startCaptureButton" value="Start Sniffer">
-    </form>
-
-    <form action="/stop_sniffer" method="post">
-        <input type="submit" value="Stop Sniffer">
-    </form>
+    </div>
+    
 
     <h2>Sniffer Statistics</h2>
     <div id="statisticstableContainer">

@@ -12,7 +12,7 @@ class SnifferService:
         self.sniffer_thread = None
         self.lock = threading.Lock()
 
-    def start_sniffer(self, interface_guid, verbose, timeout, capture_file):
+    def start_sniffer(self, interface_guid, timeout, capture_file,filter_options):
         """Start the packet sniffer on a specific interface."""
         capture_directory = os.path.join(os.getcwd(), "captures")
         if not os.path.exists(capture_directory):
@@ -22,10 +22,10 @@ class SnifferService:
 
         config = SnifferConfig(
             interface=interface_guid, 
-            verbose=verbose,
             timeout=timeout,
             use_db=False,
-            capture_file=capture_file_path
+            capture_file=capture_file_path,
+            filter_options= filter_options
         )
 
         try:
@@ -41,7 +41,6 @@ class SnifferService:
         with self.lock:
             if self.sniffer and self.sniffer_thread:
                 self.sniffer.stop_sniffing()
-                self.sniffer_thread.join()
                 self.sniffer = None
                 self.sniffer_thread = None
 
