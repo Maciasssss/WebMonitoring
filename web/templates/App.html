@@ -3,11 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <title>Packet Sniffer Dashboard</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script src="{{ url_for('static', filename='app.js') }}"></script>
     <script src="{{ url_for('static', filename='alertManager.js') }}"></script>
     <script src="{{ url_for('static', filename='tableManager.js') }}"></script>
@@ -87,23 +90,22 @@
                         <input type="submit"  value="Start Sniffer" class="primary-button">
                     </form>
                 </div>
-    
-                <!-- Stop Sniffer Button -->
-                <div class="button-wrapper">
-                    <form id="stopSnifferForm" action="/stop_sniffer" method="post" class="sniffer-form">
-                        <input type="submit" value="Stop Sniffer" class="secondary-button">
-                    </form>
-                </div>
-    
-                <!-- Refresh Page Button -->
-                <div class="button-wrapper">
-                    <button id="refreshPageButton" style="display:none;" class="primary-button">
-                        <img src="{{ url_for('static', filename='reload_icon.png') }}" alt="Reload Icon"> Refresh Page
-                    </button>
-                </div>
+               
             </div>
         </form>
-    
+        <!-- Stop Sniffer Button -->
+        <div class="button-wrapper">
+            <form id="stopSnifferForm" action="/stop_sniffer" method="post" class="sniffer-form">
+                <input type="submit" value="Stop Sniffer" class="secondary-button">
+            </form>
+        </div>
+
+        <!-- Refresh Page Button -->
+        <div class="button-wrapper">
+            <button id="refreshPageButton" style="display:none;" class="primary-button">
+                <img src="{{ url_for('static', filename='reload_icon.png') }}" alt="Reload Icon"> Refresh Page
+            </button>
+        </div>
         <!-- Download Button (Initially hidden) -->
         <div id="downloadContainer" style="display: none;">
             <h3>Download Capture File:</h3>

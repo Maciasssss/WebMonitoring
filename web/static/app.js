@@ -107,9 +107,7 @@ $(document).ready(function() {
     // Refresh the page when the refresh button is clicked
     $('#refreshPageButton').click(function() {
         location.reload();  // Refresh the page, resetting everything
+        captureStarted = false;
     });
-    
-    
-    
 
 });

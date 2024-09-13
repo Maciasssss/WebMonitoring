@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Welcome to the Web Sniffer App</title>
+    <!-- Include Google Fonts and your CSS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="{{ url_for('static', filename='introduction.css') }}">
+</head>
+<body>
+    <div class="intro-container">
+        <h1>Welcome to the Web Sniffer Application</h1>
+        <p>Monitor network traffic in real-time and detect potential threats with our advanced packet sniffer.</p>
+
+        <!-- Features Section -->
+        <section class="features">
+            <h2>Key Features</h2>
+            <ul>
+                <li>Real-time Packet Capture</li>
+                <li>Detailed Traffic Analysis</li>
+                <li>Customizable Filters</li>
+                <li>Attack Detection and Alerts</li>
+                <li>Intuitive Dashboard</li>
+            </ul>
+        </section>
+
+        <!-- How It Works Section -->
+        <section class="how-it-works">
+            <h2>How It Works</h2>
+            <p>Our application captures network packets from your selected interface and provides in-depth analysis to help you identify anomalies and potential security threats.</p>
+        </section>
+
+        <!-- Get Started Button -->
+        <div class="get-started">
+            <a href="{{ url_for('OnePage') }}" class="primary-button">Get Started</a>
+        </div>
+    </div>
+</body>
+</html>

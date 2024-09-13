@@ -60,19 +60,30 @@ class AlertManager {
         const alertBox = $(alertData.elementId);
         const attackList = alertBox.find('.attack-list');
         const currentIndex = alertData.currentIndex;
-
+    
         if (alertData.attacks.length > 0) {
-            // Get the current alert to display
             const currentAttack = alertData.attacks[currentIndex];
-            attackList.empty(); // Ensure only one alert is shown
-
+            attackList.empty();
+    
+            // Determine severity class
+            let severityClass = '';
+            if (currentAttack.severity.toLowerCase() === 'high') {
+                severityClass = 'severity-high';
+            } else if (currentAttack.severity.toLowerCase() === 'medium') {
+                severityClass = 'severity-medium';
+            } else if (currentAttack.severity.toLowerCase() === 'low') {
+                severityClass = 'severity-low';
+            }
+    
             const listItem = $(`
                 <li>
                     <p><strong>IP:</strong> ${currentAttack.ip} - <strong class="alert-counter">Counter:</strong> ${currentAttack.counter}</p>
-                    <p><strong>Severity:</strong> ${currentAttack.severity}</p>
-                    <button class="details-button" data-type="${alertType}" data-ip="${currentAttack.ip}">View Details</button>
-                    <button class="previous-alert-button" data-type="${alertType}"><- Previous</button>
-                    <button class="next-alert-button" data-type="${alertType}">Next -></button>
+                    <p><strong>Severity:</strong> <span class="${severityClass}">${currentAttack.severity}</span></p>
+                    <div class="button-group">
+                        <button class="details-button" data-type="${alertType}" data-ip="${currentAttack.ip}">View Details</button>
+                        <button class="previous-alert-button" data-type="${alertType}">&larr; Previous</button>
+                        <button class="next-alert-button" data-type="${alertType}">Next &rarr;</button>
+                    </div>
                 </li>
             `);
             attackList.append(listItem);
@@ -80,6 +91,7 @@ class AlertManager {
             attackList.empty();
         }
     }
+    
 
     updateAlertCounter(attack, alertType) {
         const alertData = this.alertsMap[alertType];

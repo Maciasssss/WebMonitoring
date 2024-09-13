@@ -1,9 +1,20 @@
 class TableManager {
     constructor(tableId, columns) {
-        this.table = $(tableId).DataTable({
+        this.tableElement = $(tableId);
+        this.columns = columns;
+        this.table = this.tableElement.DataTable({
             columns: columns,
             pageLength: 10,
-            responsive: true
+            responsive: true,
+            autoWidth: false,
+            language: {
+                paginate: {
+                    next: '&raquo;', // » symbol
+                    previous: '&laquo;' // « symbol
+                },
+                search: "_INPUT_",
+                searchPlaceholder: "Search..."
+            }
         });
     }
 
@@ -11,10 +22,24 @@ class TableManager {
         this.table.clear();
         data.forEach(item => {
             const rowData = rowMapper(item);
-            this.table.row.add(rowData).draw(false);
+            this.table.row.add(rowData);
+        });
+        this.table.draw(false);
+
+        // Add data-title attributes for responsive design
+        this.addDataTitles();
+    }
+
+    addDataTitles() {
+        const headers = this.columns.map(col => col.title);
+        this.tableElement.find('tbody tr').each((index, row) => {
+            $(row).find('td').each((i, cell) => {
+                $(cell).attr('data-title', headers[i]);
+            });
         });
     }
 }
+
 
 class PacketTableManager extends TableManager {
     constructor() {

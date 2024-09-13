@@ -7,9 +7,12 @@ def configure_routes(app):
 
     @app.route('/')
     def index():
+        return render_template('introduction.html')
+    @app.route('/OnePage')
+    def OnePage():
         interfaces = SnifferService.get_sniffable_interfaces()
         statistics = {}
-        return render_template('index.html', interfaces=interfaces, statistics=statistics)
+        return render_template('App.html',interfaces=interfaces, statistics=statistics)
 
     @app.route('/start_sniffer', methods=['POST'])
     def start_sniffer():
