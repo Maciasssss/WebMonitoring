@@ -6,34 +6,120 @@
     <!-- Include Google Fonts and your CSS -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="{{ url_for('static', filename='introduction.css') }}">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css">
 </head>
 <body>
-    <div class="intro-container">
-        <h1>Welcome to the Web Sniffer Application</h1>
-        <p>Monitor network traffic in real-time and detect potential threats with our advanced packet sniffer.</p>
-
-        <!-- Features Section -->
-        <section class="features">
-            <h2>Key Features</h2>
-            <ul>
-                <li>Real-time Packet Capture</li>
-                <li>Detailed Traffic Analysis</li>
-                <li>Customizable Filters</li>
-                <li>Attack Detection and Alerts</li>
-                <li>Intuitive Dashboard</li>
+    <!-- Hero Section -->
+    <header class="hero-section">
+        <nav class="navbar">
+            <div class="logo">WebSniffer</div>
+            <ul class="nav-links">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#how-it-works">How It Works</a></li>
+                <li><a href="#get-started" class="primary-button">Get Started</a></li>
             </ul>
-        </section>
-
-        <!-- How It Works Section -->
-        <section class="how-it-works">
-            <h2>How It Works</h2>
-            <p>Our application captures network packets from your selected interface and provides in-depth analysis to help you identify anomalies and potential security threats.</p>
-        </section>
-
-        <!-- Get Started Button -->
-        <div class="get-started">
-            <a href="{{ url_for('OnePage') }}" class="primary-button">Get Started</a>
+            <div class="burger">
+                <div class="line1"></div>
+                <div class="line2"></div>
+                <div class="line3"></div>
+            </div>
+        </nav>
+        <div class="hero-content">
+            <h1>Monitor, Analyze, Protect</h1>
+            <p>Experience real-time network monitoring with our advanced packet sniffer application.</p>
+            <a href="#get-started" class="primary-button">Get Started</a>
         </div>
-    </div>
+        <div class="scroll-indicator">
+            <span></span>
+        </div>
+    </header>
+
+    <!-- Features Section -->
+    <section id="features" class="features-section">
+        <h2>Key Features</h2>
+        <div class="features-container">
+            <div class="feature-item">
+                <i class="fas fa-bolt"></i>
+                <h3>Real-time Packet Capture</h3>
+                <p>Capture network packets as they flow through your network interfaces.</p>
+            </div>
+            <div class="feature-item">
+                <i class="fas fa-chart-line"></i>
+                <h3>Detailed Traffic Analysis</h3>
+                <p>Analyze traffic patterns and identify potential bottlenecks.</p>
+            </div>
+            <div class="feature-item">
+                <i class="fas fa-filter"></i>
+                <h3>Customizable Filters</h3>
+                <p>Apply filters to focus on specific protocols, IPs, or ports.</p>
+            </div>
+            <div class="feature-item">
+                <i class="fas fa-shield-alt"></i>
+                <h3>Attack Detection and Alerts</h3>
+                <p>Detect suspicious activities and receive instant alerts.</p>
+            </div>
+            <div class="feature-item">
+                <i class="fas fa-tachometer-alt"></i>
+                <h3>Intuitive Dashboard</h3>
+                <p>Navigate through an easy-to-use interface with interactive charts.</p>
+            </div>
+            <div class="feature-item">
+                <i class="fas fa-download"></i>
+                <h3>Export Data</h3>
+                <p>Export captured data for offline analysis and reporting.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="how-it-works-section">
+        <h2>How It Works</h2>
+        <div class="steps-container">
+            <div class="step-item">
+                <div class="step-number">1</div>
+                <h3>Select Interface</h3>
+                <p>Choose the network interface you want to monitor.</p>
+            </div>
+            <div class="step-item">
+                <div class="step-number">2</div>
+                <h3>Set Filters</h3>
+                <p>Customize filters to capture specific traffic.</p>
+            </div>
+            <div class="step-item">
+                <div class="step-number">3</div>
+                <h3>Start Monitoring</h3>
+                <p>Begin real-time packet capturing and analysis.</p>
+            </div>
+            <div class="step-item">
+                <div class="step-number">4</div>
+                <h3>Analyze Data</h3>
+                <p>Review insights and receive alerts on potential threats.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action Section -->
+    <section id="get-started" class="cta-section">
+        <h2>Ready to Secure Your Network?</h2>
+        <a href="{{ url_for('OnePage') }}" class="primary-button large-button">Get Started Now</a>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2024 WebSniffer. All rights reserved.</p>
+    </footer>
+    <!-- JavaScript for Mobile Navigation -->
+    <script>
+        const burger = document.querySelector('.burger');
+        const navLinks = document.querySelector('.nav-links');
+
+        burger.addEventListener('click', () => {
+            navLinks.classList.toggle('nav-active');
+            burger.classList.toggle('toggle');
+        });
+    </script>
 </body>
 </html>

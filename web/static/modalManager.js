@@ -1,10 +1,6 @@
 class ModalManager {
     static displayPacketDetails(packet) {
-        console.log(packet); // This will show the row data as an array
-
-        // Update to access array elements based on their indices
         const detailsHtml = `
-            <h3>Packet Details</h3>
             <p><strong>Source IP:</strong> ${packet[0]}</p>
             <p><strong>Destination IP:</strong> ${packet[1]}</p>
             <p><strong>Source MAC:</strong> ${packet[2]}</p>
@@ -18,15 +14,15 @@ class ModalManager {
             <p><strong>Identifier:</strong> ${packet[10]}</p>
             <p><strong>Sequence:</strong> ${packet[11]}</p>
         `;
-        $('#packetDetails').html(detailsHtml);
+        $('#packetModal .modal-body').html(detailsHtml);
         ModalManager.showModal('#packetModal');
     }
-     // Method to display alert details in the modal
-     static displayAlertDetails(alert) {
+
+    static displayAlertDetails(alert) {
         const displayType = alert.type.replace(/_/g, ' ');
 
         const detailsHtml = `
-            <p><strong>Type:</strong> ${displayType}</p>  <!-- Show transformed type -->
+            <p><strong>Type:</strong> ${displayType}</p>
             <p><strong>IP Address:</strong> ${alert.ip}</p>
             <p><strong>Details:</strong> ${alert.details || 'N/A'}</p>
             <p><strong>Timestamp:</strong> ${alert.timestamp || 'N/A'}</p>
@@ -39,21 +35,85 @@ class ModalManager {
             <p>${alert.possible_fixes || 'N/A'}</p>
         `;
 
-        $('#alertDetails').html(detailsHtml);
+        $('#alertModal .modal-body').html(detailsHtml);
         ModalManager.showModal('#alertModal');
     }
-    
-    static showModal(modalId, content) {
-        $(modalId).find('.modal-content').html(content);
-        $(modalId).show();
-        $('.close').on('click', function() {
-            $(modalId).hide();
+
+    static showAlert(message, callback) {
+        $('#customAlertMessage').text(message);
+        ModalManager.showModal('#customAlertModal', callback, true);
+    }
+
+    static showConfirm(message, callback) {
+        $('#customConfirmMessage').text(message);
+        ModalManager.showModal('#customConfirmModal', callback, false, true);
+    }
+
+    static showModal(modalId, callback = null, isAlert = false, isConfirm = false) {
+        $(modalId).fadeIn(200);
+        $('body').css('overflow', 'hidden');
+
+        // Close modal on close button click
+        $(modalId).find('.close').off('click.modal').on('click.modal', function() {
+            ModalManager.closeModal(modalId, callback, false);
         });
-        $(window).on('click', function(event) {
-            if (event.target === $(modalId)[0]) {
-                $(modalId).hide();
+
+        // Close modal on Esc key
+        $(document).off('keydown.modal').on('keydown.modal', function(event) {
+            if (event.key === "Escape") {
+                ModalManager.closeModal(modalId, callback, false);
             }
         });
+
+        // Close modal when clicking outside the modal content
+        $(modalId).off('click.modal').on('click.modal', function(event) {
+            if ($(event.target).is(modalId)) {
+                ModalManager.closeModal(modalId, callback, false);
+            }
+        });
+
+        // Additional handlers for Alert and Confirm modals
+        if (isAlert) {
+            // OK button for Alert modal
+            $('#customAlertOkButton').off('click.modal').on('click.modal', function() {
+                ModalManager.closeModal(modalId, callback, true);
+            });
+        }
+
+        if (isConfirm) {
+            // Yes button for Confirm modal
+            $('#customConfirmYesButton').off('click.modal').on('click.modal', function() {
+                ModalManager.closeModal(modalId, callback, true, true);
+            });
+
+            // No button for Confirm modal
+            $('#customConfirmNoButton').off('click.modal').on('click.modal', function() {
+                ModalManager.closeModal(modalId, callback, true, false);
+            });
+        }
+    }
+
+    static closeModal(modalId, callback, fromButton = false, confirmResult = null) {
+        $(modalId).fadeOut(200);
+        $('body').css('overflow', '');
+        ModalManager.removeModalEventHandlers(modalId);
+
+        if (callback && fromButton) {
+            if (confirmResult !== null) {
+                callback(confirmResult); // For Confirm modal
+            } else {
+                callback(); // For Alert modal
+            }
+        }
+    }
+
+    static removeModalEventHandlers(modalId) {
+        // Remove event handlers to prevent duplicates
+        $(modalId).find('.close').off('click.modal');
+        $(document).off('keydown.modal');
+        $(modalId).off('click.modal');
+        $('#customAlertOkButton').off('click.modal');
+        $('#customConfirmYesButton').off('click.modal');
+        $('#customConfirmNoButton').off('click.modal');
     }
 }
-

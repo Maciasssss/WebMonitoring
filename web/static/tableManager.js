@@ -3,7 +3,7 @@ class TableManager {
         this.tableElement = $(tableId);
         this.columns = columns;
         this.table = this.tableElement.DataTable({
-            columns: columns,
+            columns: columns.map(col => ({ title: col.title })),
             pageLength: 10,
             responsive: true,
             autoWidth: false,
@@ -14,7 +14,36 @@ class TableManager {
                 },
                 search: "_INPUT_",
                 searchPlaceholder: "Search..."
+            },
+            headerCallback: (thead, data, start, end, display) => {
+                $(thead).find('th').each((index, th) => {
+                    const tooltip = this.columns[index].tooltip;
+                    if (tooltip) {
+                        $(th).attr('title', tooltip);
+                    }
+                });
             }
+        });
+    }
+
+    updateTable(data, rowMapper) {
+        this.table.clear();
+        data.forEach(item => {
+            const rowData = rowMapper(item);
+            this.table.row.add(rowData);
+        });
+        this.table.draw(false);
+
+        // Add data-title attributes for responsive design
+        this.addDataTitles();
+    }
+
+    addDataTitles() {
+        const headers = this.columns.map(col => col.title);
+        this.tableElement.find('tbody tr').each((index, row) => {
+            $(row).find('td').each((i, cell) => {
+                $(cell).attr('data-title', headers[i]);
+            });
         });
     }
 
@@ -44,20 +73,19 @@ class TableManager {
 class PacketTableManager extends TableManager {
     constructor() {
         super('#packetTable', [
-            { title: "Source IP" },
-            { title: "Destination IP" },
-            { title: "Source MAC" },
-            { title: "Destination MAC" },
-            { title: "IP Version" },
-            { title: "TTL" },
-            { title: "Checksum" },
-            { title: "Packet Size (bytes)" },
-            { title: "Passing Time" },
-            { title: "Protocol" },
-            { title: "Identifier" },
-            { title: "Sequence" }
+            { title: "Source IP", tooltip: "The source IP address of the packet" },
+            { title: "Destination IP", tooltip: "The destination IP address of the packet" },
+            { title: "Source MAC", tooltip: "The source MAC address of the packet" },
+            { title: "Destination MAC", tooltip: "The destination MAC address of the packet" },
+            { title: "IP Version", tooltip: "The IP protocol version (IPv4 or IPv6)" },
+            { title: "TTL", tooltip: "Time To Live of the packet" },
+            { title: "Checksum", tooltip: "Checksum value of the packet" },
+            { title: "Packet Size (bytes)", tooltip: "Size of the packet in bytes" },
+            { title: "Passing Time", tooltip: "The time when the packet was captured" },
+            { title: "Protocol", tooltip: "The protocol used (TCP, UDP, etc.)" },
+            { title: "Identifier", tooltip: "Identifier field from the IP header" },
+            { title: "Sequence", tooltip: "Sequence number of the packet" }
         ]);
-       
     }
 
     populatePackets(packets) {
@@ -75,10 +103,10 @@ class PacketTableManager extends TableManager {
             packet.identifier || 'N/A',
             packet.sequence || 'N/A'
         ]);
-         // Attach click event to rows after data is populated
+
+        // Attach click event to rows after data is populated
         $('#packetTable tbody').off('click').on('click', 'tr', (event) => {
             const rowData = this.table.row(event.currentTarget).data();
-            console.log("Row clicked:", rowData); // Log row data when clicked
 
             if (rowData) {
                 ModalManager.displayPacketDetails(rowData); // Pass packet data to modal
@@ -88,22 +116,23 @@ class PacketTableManager extends TableManager {
         });
     }
 }
+
 class StatisticsTableManager extends TableManager {
     constructor() {
         super('#statisticsTable', [
-            { title: "Total Packets" },
-            { title: "Echo Request Count" },
-            { title: "Echo Reply Count" },
-            { title: "ARP Count" },
-            { title: "TCP Count" },
-            { title: "UDP Count" },
-            { title: "HTTP Count" },
-            { title: "DNS Count" },
-            { title: "ICMP Count" },
-            { title: "IP Count" },
-            { title: "IPv6 Count" },
-            { title: "Total Bytes Sent" },
-            { title: "Total Bytes Received" }
+            { title: "Total Packets", tooltip: "Total number of packets captured" },
+            { title: "Echo Request Count", tooltip: "Number of ICMP Echo Request packets" },
+            { title: "Echo Reply Count", tooltip: "Number of ICMP Echo Reply packets" },
+            { title: "ARP Count", tooltip: "Number of ARP packets" },
+            { title: "TCP Count", tooltip: "Number of TCP packets" },
+            { title: "UDP Count", tooltip: "Number of UDP packets" },
+            { title: "HTTP Count", tooltip: "Number of HTTP packets" },
+            { title: "DNS Count", tooltip: "Number of DNS packets" },
+            { title: "ICMP Count", tooltip: "Number of ICMP packets" },
+            { title: "IP Count", tooltip: "Number of IP packets" },
+            { title: "IPv6 Count", tooltip: "Number of IPv6 packets" },
+            { title: "Total Bytes Sent", tooltip: "Total bytes sent from the source" },
+            { title: "Total Bytes Received", tooltip: "Total bytes received at the destination" }
         ]);
     }
 
@@ -126,21 +155,21 @@ class StatisticsTableManager extends TableManager {
     }
 }
 
+
 class FlowStatisticsTableManager extends TableManager {
     constructor() {
         super('#flowStatisticsTable', [
-            { title: "Flow" },
-            { title: "Throughput (B/s)" },
-            { title: "Packet Delay (ms)" },
-            { title: "Jitter (ms)" },
-            { title: "Packet Loss (%)" },
-            { title: "RTT (ms)" },
-            { title: "TTL" },
-            { title: "Bandwidth Utilization (%)" }
+            { title: "Flow", tooltip: "Source and Destination IPs and Ports" },
+            { title: "Throughput (B/s)", tooltip: "Amount of data transferred per second" },
+            { title: "Packet Delay (ms)", tooltip: "Average time delay of packets" },
+            { title: "Jitter (ms)", tooltip: "Variation in packet delay" },
+            { title: "Packet Loss (%)", tooltip: "Percentage of packets lost during transmission" },
+            { title: "RTT (ms)", tooltip: "Round Trip Time of packets" },
+            { title: "TTL", tooltip: "Time To Live value indicating packet lifespan" },
+            { title: "Bandwidth Utilization (%)", tooltip: "Percentage of bandwidth used by the flow" }
         ]);
     }
 
-    // Utility function to safely get stats with default value
     getStatValue(stat, defaultValue = '0.00', isFixed = true) {
         return stat !== undefined ? (isFixed ? stat.toFixed(2) : stat) : defaultValue;
     }
@@ -153,7 +182,7 @@ class FlowStatisticsTableManager extends TableManager {
             this.getStatValue(flowStats[flow].jitter),
             this.getStatValue(flowStats[flow].packet_loss),
             this.getStatValue(flowStats[flow].rtt),
-            this.getStatValue(flowStats[flow].ttl, 'N/A', false),  
+            this.getStatValue(flowStats[flow].ttl, 'N/A', false),
             this.getStatValue(flowStats[flow].bandwidth_utilization)
         ]);
     }
