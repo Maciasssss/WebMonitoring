@@ -7,7 +7,12 @@ body {
     background: linear-gradient(135deg, #1f1c2c, #928dab);
     overflow-x: hidden;
 }
-
+body::-webkit-scrollbar {
+    width: 0;  
+}
+body.no-scroll {
+    overflow: hidden;
+}
 /* Navigation Bar */
 .navbar {
     display: flex;

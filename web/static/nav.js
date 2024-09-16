@@ -2,7 +2,7 @@ $(document).ready(function() {
     const $burger = $('.burger');
     const $navLinks = $('.nav-links');
     const $body = $('body');
-
+    $('body').addClass('no-scroll');
     function initBurgerMenu() {
         // Enable burger menu and event listeners for small screens
         if ($(window).width() <= 768) {
@@ -37,3 +37,4 @@ $(document).ready(function() {
         initBurgerMenu();
     });
 });
+

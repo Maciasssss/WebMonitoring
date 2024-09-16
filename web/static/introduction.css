@@ -5,10 +5,13 @@ body {
     padding: 0;
     color: #fff;
     overflow-x: hidden;
+    overflow-y: scroll;
 }
-/* Apply box-sizing globally */
-*, *::before, *::after {
-    box-sizing: border-box;
+body::-webkit-scrollbar {
+    width: 0;  /* Hide the scrollbar (still allows scrolling) */
+}
+body.no-scroll {
+    overflow: hidden;
 }
 /* Hero Section */
 
@@ -314,26 +317,17 @@ body {
 }
 
 /* Responsive Design */
-@media (max-width: 992px) and (min-width: 769px) {
+@media (max-width: 992px) {
     .hero-content h1 {
-        font-size: 48px;  /* Already applied */
-    }
-
-    .hero-content p {
-        font-size: 20px;  /* Adjust to ensure it's responsive */
-    }
-
-    .primary-button {
-        font-size: 16px;  /* Ensure buttons shrink as needed */
-        padding: 12px 25px; /* Adjust padding for smaller screens */
+        font-size: 48px;
     }
 
     .features-container,
     .steps-container {
         gap: 30px;
     }
+    
 }
-
 
 @media (max-width: 768px) {
     .burger {
@@ -357,7 +351,7 @@ body {
         transition: transform 0.3s ease-in;
         z-index: 998;
     }
-
+    
     .nav-links.nav-active {
         transform: translateX(0);
     }
@@ -405,9 +399,7 @@ body {
     .hero-content h1 {
         font-size: 28px;
     }
-    .no-scroll {
-        overflow: hidden;
-    }
+   
     .hero-content p {
         font-size: 16px;
     }
