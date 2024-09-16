@@ -10,30 +10,31 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css">
+    <!-- JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="{{ url_for('static', filename='nav.js') }}"></script>
 </head>
 <body>
+     <!-- NavBar -->
+    <nav class="navbar">
+        <div class="logo">WebSniffer</div>
+        <ul class="nav-links">
+            <li><a href="#features">Features</a></li>
+            <li><a href="#how-it-works">How It Works</a></li>
+            <li><a href="#get-started" class="primary-button">Get Started</a></li>
+        </ul>
+        <div class="burger">
+            <div class="line1"></div>
+            <div class="line2"></div>
+            <div class="line3"></div>
+        </div>
+    </nav>
     <!-- Hero Section -->
     <header class="hero-section">
-        <nav class="navbar">
-            <div class="logo">WebSniffer</div>
-            <ul class="nav-links">
-                <li><a href="#features">Features</a></li>
-                <li><a href="#how-it-works">How It Works</a></li>
-                <li><a href="#get-started" class="primary-button">Get Started</a></li>
-            </ul>
-            <div class="burger">
-                <div class="line1"></div>
-                <div class="line2"></div>
-                <div class="line3"></div>
-            </div>
-        </nav>
         <div class="hero-content">
             <h1>Monitor, Analyze, Protect</h1>
             <p>Experience real-time network monitoring with our advanced packet sniffer application.</p>
             <a href="#get-started" class="primary-button">Get Started</a>
-        </div>
-        <div class="scroll-indicator">
-            <span></span>
         </div>
     </header>
 
@@ -111,15 +112,6 @@
     <footer class="footer">
         <p>&copy; 2024 WebSniffer. All rights reserved.</p>
     </footer>
-    <!-- JavaScript for Mobile Navigation -->
-    <script>
-        const burger = document.querySelector('.burger');
-        const navLinks = document.querySelector('.nav-links');
-
-        burger.addEventListener('click', () => {
-            navLinks.classList.toggle('nav-active');
-            burger.classList.toggle('toggle');
-        });
-    </script>
+    <script src="{{ url_for('static', filename='nav.js') }}"></script>
 </body>
 </html>
