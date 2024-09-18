@@ -22,6 +22,7 @@
     <script src="{{ url_for('static', filename='tableManager.js') }}"></script>
     <script src="{{ url_for('static', filename='fetchService.js') }}"></script>
     <script src="{{ url_for('static', filename='modalManager.js') }}"></script>
+    <script src="{{ url_for('static', filename='nav.js') }}"></script>
 </head>
 <body>
     <!-- Navigation Bar -->
@@ -332,17 +333,5 @@
             </div>
         </div>
     </div>
-
-
-    <!-- JavaScript for Mobile Navigation -->
-    <script>
-        const burger = document.querySelector('.burger');
-        const navLinks = document.querySelector('.nav-links');
-
-        burger.addEventListener('click', () => {
-            navLinks.classList.toggle('nav-active');
-            burger.classList.toggle('toggle');
-        });
-    </script>
 </body>
 </html>

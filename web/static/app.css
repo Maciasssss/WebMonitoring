@@ -635,23 +635,6 @@ table.display tbody tr:hover {
     .alert-box {
         width: 100%;
     }
-}
-
-@media (max-width: 480px) {
-    .hero-content h1 {
-        font-size: 36px;
-    }
-
-    .hero-content p {
-        font-size: 18px;
-    }
-
-    .primary-button {
-        font-size: 16px;
-        padding: 12px 25px;
-    }
-}
-@media (max-width: 768px) {
     .modal-content {
         width: 95%;
         margin: 60px auto;
@@ -667,5 +650,41 @@ table.display tbody tr:hover {
     .modal-footer button {
         width: 100%;
         margin-top: 20px;
+    }
+    .form-group
+    {
+        flex: 1 1 100px;
+        display: flex;
+    }
+    .nav-links{
+        width: 30%;
+        display: block;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-content h1 {
+        font-size: 36px;
+    }
+
+    .hero-content p {
+        font-size: 18px;
+    }
+
+    .primary-button {
+        font-size: 16px;
+        padding: 12px 25px;
+    }
+    .form-group
+    {
+        flex: 1 1 100px;
+        display: flex;
+    }
+    .nav-links{
+        width: 50%;
+        display: block;
+    }
+    .burger{
+        justify-content: right;
     }
 }

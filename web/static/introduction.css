@@ -7,12 +7,6 @@ body {
     overflow-x: hidden;
     overflow-y: scroll;
 }
-body::-webkit-scrollbar {
-    width: 0;  /* Hide the scrollbar (still allows scrolling) */
-}
-body.no-scroll {
-    overflow: hidden;
-}
 /* Hero Section */
 
 .hero-section {
@@ -373,7 +367,7 @@ body.no-scroll {
     }
     .features-container,
     .steps-container {
-        flex-direction: column;
+        flex-direction: row;
     }
 
     .feature-item,
@@ -397,16 +391,22 @@ body.no-scroll {
 }
 @media (max-width: 480px) {
     .hero-content h1 {
-        font-size: 28px;
+        font-size: 32px;
     }
-   
+   .features-container{
+    flex-direction: row;
+   }
     .hero-content p {
+        font-size: 24px;
+    }
+    .hero-section{
+        padding-top: 10px;
+    }
+    .primary-button {
         font-size: 16px;
     }
-
-    .primary-button {
-        font-size: 14px;
-        padding: 10px 20px;
+    .steps-container{
+        flex-direction: row;
     }
 
     .features-section h2,
