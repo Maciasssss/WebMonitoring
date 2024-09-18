@@ -36,7 +36,6 @@ $(document).ready(function() {
         });
     }
 
-    // Start polling for stats
     function startPolling() {
         intervals.push(setInterval(fetchStatistics, 2000));
         intervals.push(setInterval(fetchPackets, 2000));
@@ -48,11 +47,10 @@ $(document).ready(function() {
         console.log('Capture check interval ID:', captureCheckInterval);
     }
 
-    // Stop polling
     function stopPolling() {
         console.log('Intervals before stopping polling:', intervals);
         intervals.forEach(interval => clearInterval(interval));
-        clearInterval(captureCheckInterval); // Stop checking capture file
+        clearInterval(captureCheckInterval); 
         intervals = [];
         console.log('Polling stopped.');
     }
@@ -68,11 +66,11 @@ $(document).ready(function() {
             $.post('/start_sniffer', formData)
                 .done(function(response) {
                     ModalManager.showAlert(response.status);
-                    startPolling();  // Start polling after sniffer is started
+                    startPolling();  
                 })
                 .fail(function(response) {
                     ModalManager.showAlert(response.responseJSON.error);
-                    captureStarted = false;  // Reset captureStarted if failed
+                    captureStarted = false;  
                 });
         } else {
             ModalManager.showAlert('Sniffer is already running.');
@@ -86,12 +84,12 @@ $(document).ready(function() {
         if (captureStarted) {
             $.post('/stop_sniffer')
                 .done(function(response) {
-                    stopPolling();  // Stop the current polling
-                    captureStarted = false;  // Reset captureStarted flag
+                    stopPolling();  
+                    captureStarted = false;  
                     ModalManager.showAlert(response.status, function() {
                         ModalManager.showConfirm("Do you want to reset the page and clear all settings?", function(resetDecision) {
                             if (resetDecision) {
-                                // If the user chooses to reset, redirect to the index page
+                                // If the user chooses to reset, redirect to the OnePage page
                                 window.location.href = '/OnePage';
                             } else {
                                 $('#refreshPageButton').show();

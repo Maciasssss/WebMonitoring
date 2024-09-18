@@ -1,4 +1,3 @@
-#ipv6_handler.py
 from scapy.all import IPv6
 from .packet_handler_strategy import PacketHandlerStrategy
 from datetime import datetime
@@ -12,15 +11,13 @@ class IPv6Handler(PacketHandlerStrategy):
         if packet.haslayer(IPv6):
             ipv6_packet = packet.getlayer(IPv6)
 
-            # IPv6 specific fields
             src_ip = ipv6_packet.src
             dst_ip = ipv6_packet.dst
-            flow_label = ipv6_packet.fl  # Flow label
-            traffic_class = ipv6_packet.tc  # Traffic class
-            hop_limit = ipv6_packet.hlim  # Hop limit
-            next_header = ipv6_packet.nh  # Next header (protocol)
+            flow_label = ipv6_packet.fl  
+            traffic_class = ipv6_packet.tc  
+            hop_limit = ipv6_packet.hlim 
+            next_header = ipv6_packet.nh  
             
-            # Other metadata
             packet_size = len(packet)
             protocol_str = "IPv6"
 
@@ -31,7 +28,6 @@ class IPv6Handler(PacketHandlerStrategy):
             )
             self.sniffer.ipv6_count += 1
 
-            # Add packet information to the sniffer's packet info list
             packet_info = {
                 "src_ip": src_ip,
                 "dst_ip": dst_ip,

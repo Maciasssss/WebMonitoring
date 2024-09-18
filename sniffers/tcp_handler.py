@@ -1,4 +1,3 @@
-#tcp_handler.py
 import socket
 from scapy.all import TCP, IP, Ether
 from .packet_handler_strategy import PacketHandlerStrategy
@@ -25,7 +24,6 @@ class TCPHandler(PacketHandlerStrategy):
             ip_header = packet.getlayer(IP)
             ether_header = packet.getlayer(Ether)
 
-            # Check if the IP layer exists
             if ip_header:
                 src_ip = ip_header.src
                 dst_ip = ip_header.dst
@@ -37,17 +35,13 @@ class TCPHandler(PacketHandlerStrategy):
                 ip_version = "N/A"
                 ttl = "N/A"
 
-            # Get the interface IP dynamically
             interface_ip = self.get_interface_ip()
 
-            # If the packet is sent from the machine, consider it "sent bytes"
             if src_ip == interface_ip:
                 self.sniffer.total_bytes_sent += len(packet)
             else:
-                # Otherwise, consider it "received bytes"
                 self.sniffer.total_bytes_received += len(packet)
 
-            # Handle cases where the Ether layer might not be present
             if ether_header:
                 src_mac = ether_header.src
                 dst_mac = ether_header.dst
@@ -60,11 +54,10 @@ class TCPHandler(PacketHandlerStrategy):
             dst_port = tcp_packet.dport
             sequence_number = tcp_packet.seq
             acknowledgment_number = tcp_packet.ack
-            tcp_flags = str(tcp_packet.flags)  # Serialize TCP flags as string
+            tcp_flags = str(tcp_packet.flags)  
             window_size = tcp_packet.window
             mss_option = None
 
-            # Extract TCP options (e.g., MSS)
             for option in tcp_packet.options:
                 if option[0] == 'MSS':
                     mss_option = option[1]
@@ -84,7 +77,6 @@ class TCPHandler(PacketHandlerStrategy):
             )
             self.sniffer.tcp_count += 1
 
-            # Add packet info
             packet_info = {
                 "src_ip": src_ip,
                 "dst_ip": dst_ip,

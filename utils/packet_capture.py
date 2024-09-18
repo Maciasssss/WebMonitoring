@@ -7,7 +7,6 @@ class PacketCapture:
     def start_capture(self, packets_info):
         if packets_info and self.capture_file:
             with open(self.capture_file, 'w', newline='', encoding='utf-8') as csvfile:
-                # Expanded fieldnames for advanced details
                 fieldnames = [
                     "Source IP", "Destination IP", "Source MAC", "Destination MAC", "IP Version", "TTL",
                     "Checksum", "Packet Size", "Passing Time", "Protocol", "Identifier", "Sequence",
@@ -18,7 +17,6 @@ class PacketCapture:
 
                 writer.writeheader()
                 for packet in packets_info:
-                    # Write detailed packet information, using `.get()` to avoid KeyError for non-applicable fields
                     writer.writerow({
                         "Source IP": packet.get('src_ip', 'N/A'),
                         "Destination IP": packet.get('dst_ip', 'N/A'),

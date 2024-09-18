@@ -29,7 +29,6 @@ $(document).ready(function() {
         }
     }
 
-    // Initialize the burger menu on page load
     initBurgerMenu();
 
     // Reapply the burger menu behavior when resizing the window

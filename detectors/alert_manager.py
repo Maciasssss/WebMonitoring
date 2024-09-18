@@ -1,13 +1,10 @@
 # alert_manager.py
-
 import datetime
-
 
 class AlertManager:
     def __init__(self):
         self.alerts = []
 
-    # Modify add_alert to accept an alert object (dictionary)
     def add_alert(self, alert):
         self.alerts.append(alert)
 

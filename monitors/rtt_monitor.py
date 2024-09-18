@@ -17,6 +17,6 @@ class RTTMonitor(MonitorStrategy):
     def get_metric(self, flow_key):
         flow = self.flows[flow_key]
         if len(flow['packets']) >= 2:
-            rtt = (flow['packets'][-1] - flow['packets'][0]).total_seconds() * 1000  # RTT in ms
+            rtt = (flow['packets'][-1] - flow['packets'][0]).total_seconds() * 1000  
             return rtt
         return 0

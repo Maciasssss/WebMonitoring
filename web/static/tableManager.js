@@ -55,7 +55,6 @@ class TableManager {
         });
         this.table.draw(false);
 
-        // Add data-title attributes for responsive design
         this.addDataTitles();
     }
 
@@ -104,12 +103,11 @@ class PacketTableManager extends TableManager {
             packet.sequence || 'N/A'
         ]);
 
-        // Attach click event to rows after data is populated
         $('#packetTable tbody').off('click').on('click', 'tr', (event) => {
             const rowData = this.table.row(event.currentTarget).data();
 
             if (rowData) {
-                ModalManager.displayPacketDetails(rowData); // Pass packet data to modal
+                ModalManager.displayPacketDetails(rowData); 
             } else {
                 console.error("No row data available for this row.");
             }

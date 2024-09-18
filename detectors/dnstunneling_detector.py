@@ -13,9 +13,9 @@ class DNSTunnelingDetector(DetectorStrategy):
     def monitor_traffic(self, packet):
         if packet.haslayer(DNS) and packet.haslayer(IP) and packet.haslayer(UDP):
             dns_layer = packet.getlayer(DNS)
-            if dns_layer.qr == 0:  # This is a DNS query (not a response)
+            if dns_layer.qr == 0:  
                 src_ip = packet[IP].src
-                dst_port = packet[UDP].dport  # DNS usually operates on port 53
+                dst_port = packet[UDP].dport  
                 protocol = "UDP"
                 timestamp = datetime.now()
 
@@ -23,10 +23,8 @@ class DNSTunnelingDetector(DetectorStrategy):
                 self.dns_queries[src_ip] = [ts for ts in self.dns_queries[src_ip] if ts > timestamp - timedelta(seconds=self.time_window)]
                 self.dns_queries[src_ip].append(timestamp)
 
-                # If the number of DNS queries from this IP exceeds the threshold, trigger an alert
                 if len(self.dns_queries[src_ip]) > self.query_threshold:
                     severity = "High" if len(self.dns_queries[src_ip]) > 100 else "Medium"
-
                     return {
                         "ip": src_ip,
                         "type": "DNS_Tunneling",
@@ -37,4 +35,4 @@ class DNSTunnelingDetector(DetectorStrategy):
                         "protocol": protocol,
                         "possible_fixes": "Consider using DNS filtering, inspecting DNS queries more closely, or blocking suspicious DNS requests."
                     }
-        return None  # No alert if nothing is detected
+        return None  

@@ -177,15 +177,15 @@ h1, h2, h3 {
 
 /* Style for the option values */
 .sniffer-form select option {
-    background-color: #1f1c2c; /* Dark background */
-    color: #fff;               /* White text */
+    background-color: #1f1c2c; 
+    color: #fff;               
     font-size: 16px;
     padding: 10px;
 }
 
-/* Hover effect for options (works in some browsers) */
+/* Hover effect for options */
 .sniffer-form select option:hover {
-    background-color: #ff416c; /* Highlight color */
+    background-color: #ff416c; 
     color: #fff;
 }
 
@@ -316,14 +316,14 @@ table.display tbody tr:hover {
     font-weight: 400;
 }
 
-.attack-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+.alert-box h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-weight: 400;
+    text-align: center;
+    color: #fff;
 }
-
 /* Modal Styles */
-/* Advanced Modal Styles */
 .modal {
     display: none;
     position: fixed;
@@ -334,18 +334,13 @@ table.display tbody tr:hover {
     height: 100%;
     overflow-y: auto;
     background: rgba(0,0,0,0.8);
-    backdrop-filter: blur(5px); /* Adds a blur effect to the background */
+    backdrop-filter: blur(5px); 
     animation: fadeIn 0.5s ease-in-out;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
 }
 
 .modal-content {
     background: linear-gradient(135deg, #1f1c2c, #928dab);
-    margin: 80px auto; /* Centers the modal vertically with some margin */
+    margin: 80px auto; 
     padding: 30px;
     border-radius: 15px;
     width: 90%;
@@ -354,11 +349,6 @@ table.display tbody tr:hover {
     position: relative;
     box-shadow: 0 15px 25px rgba(0,0,0,0.5);
     animation: slideIn 0.5s ease-in-out;
-}
-
-@keyframes slideIn {
-    from { transform: translateY(-50px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
 }
 
 .modal-header {
@@ -428,8 +418,6 @@ table.display tbody tr:hover {
     box-shadow: 0 5px 15px rgba(255, 75, 43, 0.5);
 }
 
-
-
 /* Footer */
 .footer {
     background-color: #1f1c2c;
@@ -447,7 +435,6 @@ table.display tbody tr:hover {
     padding: 0;
     margin: 0;
 }
-
 .attack-list li {
     background-color: rgba(255, 255, 255, 0.1);
     padding: 15px;
@@ -530,15 +517,6 @@ table.display tbody tr:hover {
     color: #28a745;
 }
 
-/* Adjustments for Alert Box Titles */
-.alert-box h3 {
-    margin-top: 0;
-    margin-bottom: 20px;
-    font-weight: 400;
-    text-align: center;
-    color: #fff;
-}
-
 /* Button Group Styles */
 .button-group {
     display: flex;
@@ -551,6 +529,7 @@ table.display tbody tr:hover {
     flex: 1;
 }
 
+/* Responsive Design */
 @media (max-width: 768px) {
     .button-group {
         flex-direction: column;
@@ -561,7 +540,6 @@ table.display tbody tr:hover {
     }
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
     .attack-list li {
         padding: 15px 10px;
@@ -575,7 +553,6 @@ table.display tbody tr:hover {
     }
 }
 
-/* Responsive Design */
 @media (max-width: 992px) {
     .nav-links {
         position: absolute;
@@ -687,4 +664,16 @@ table.display tbody tr:hover {
     .burger{
         justify-content: right;
     }
+}
+
+
+@keyframes slideIn {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }

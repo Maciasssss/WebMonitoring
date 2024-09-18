@@ -20,5 +20,5 @@ class PacketLossMonitor(MonitorStrategy):
         received_packets = len(flow['packets'])
         expected_packets = self.expected_packet_counts[flow_key]
         if expected_packets > 0:
-            return (expected_packets - received_packets) / expected_packets * 100  # Packet loss %
+            return (expected_packets - received_packets) / expected_packets * 100  
         return 0

@@ -1,4 +1,3 @@
-#dns_handler.py
 from scapy.all import UDP, DNS, IP, Ether
 from .packet_handler_strategy import PacketHandlerStrategy
 from datetime import datetime
@@ -14,7 +13,6 @@ class DNSHandler(PacketHandlerStrategy):
             ip_header = packet.getlayer(IP)
             ether_header = packet.getlayer(Ether)
 
-            # Handling the IP layer
             if ip_header:
                 src_ip = ip_header.src
                 dst_ip = ip_header.dst
@@ -26,7 +24,6 @@ class DNSHandler(PacketHandlerStrategy):
                 ip_version = "N/A"
                 ttl = "N/A"
 
-            # Handling the Ethernet layer
             if ether_header:
                 src_mac = ether_header.src
                 dst_mac = ether_header.dst
@@ -34,13 +31,11 @@ class DNSHandler(PacketHandlerStrategy):
                 src_mac = "N/A"
                 dst_mac = "N/A"
 
-            # DNS specific fields
             query_name = dns_packet.qd.qname.decode() if dns_packet.qdcount > 0 else "N/A"
             query_type = dns_packet.qd.qtype if dns_packet.qdcount > 0 else "N/A"
             response_code = dns_packet.rcode  # Response code (0 = no error)
-            is_response = dns_packet.qr == 1  # Is it a DNS response?
+            is_response = dns_packet.qr == 1  
 
-            # DNS Packet details
             if is_response:
                 protocol_str = "DNS Response"
                 answer_count = dns_packet.ancount
@@ -49,7 +44,6 @@ class DNSHandler(PacketHandlerStrategy):
                 protocol_str = "DNS Request"
                 dns_info = f"Request: {query_name}, Query Type: {query_type}"
 
-            # Gathering other packet details
             packet_size = len(packet)
             src_port = packet[UDP].sport
             dst_port = packet[UDP].dport
@@ -60,7 +54,6 @@ class DNSHandler(PacketHandlerStrategy):
             )
             self.sniffer.dns_count += 1
 
-            # Add packet info to the list
             packet_info = {
                 "src_ip": src_ip,
                 "dst_ip": dst_ip,

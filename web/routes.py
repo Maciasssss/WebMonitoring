@@ -28,7 +28,6 @@ def configure_routes(app):
         timeout = int(request.form['timeout'])
         capture_file = request.form.get('capture_file')
 
-        # Gather filter options from the form
         protocol = request.form.get('protocol', None)
         src_ip = request.form.get('src_ip', None)
         dst_ip = request.form.get('dst_ip', None)

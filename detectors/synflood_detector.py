@@ -10,9 +10,9 @@ class SynFloodDetector(DetectorStrategy):
         self.syn_requests = defaultdict(list)
 
     def monitor_traffic(self, packet):
-        if packet.haslayer(TCP) and packet[TCP].flags == 'S':  # SYN packet
+        if packet.haslayer(TCP) and packet[TCP].flags == 'S':  
             src_ip = packet[IP].src
-            dst_port = packet[TCP].dport  # Extract the destination port
+            dst_port = packet[TCP].dport  
             protocol = "TCP"
             timestamp = datetime.now()
 
@@ -20,10 +20,8 @@ class SynFloodDetector(DetectorStrategy):
             self.syn_requests[src_ip] = [ts for ts in self.syn_requests[src_ip] if ts > timestamp - timedelta(seconds=self.time_window)]
             self.syn_requests[src_ip].append(timestamp)
 
-            # Detect potential SYN flood attack
             if len(self.syn_requests[src_ip]) > self.syn_threshold:
                 severity = "High" if len(self.syn_requests[src_ip]) > 200 else "Medium"
-
                 return {
                     "ip": src_ip,
                     "type": "SYN_Flood",
@@ -34,4 +32,4 @@ class SynFloodDetector(DetectorStrategy):
                     "protocol": protocol,
                     "possible_fixes": "Consider enabling SYN cookies, rate limiting, or using firewall rules to mitigate SYN flood attacks."
                 }
-        return None  # No alert if nothing is detected
+        return None  

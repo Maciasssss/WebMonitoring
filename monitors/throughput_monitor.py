@@ -25,5 +25,5 @@ class ThroughputMonitor(MonitorStrategy):
         flow = self.flows[flow_key]
         duration = (flow['end_time'] - flow['start_time']).total_seconds()
         if duration > 0:
-            return flow['total_bytes'] / duration  # Bytes per second
+            return flow['total_bytes'] / duration  
         return 0

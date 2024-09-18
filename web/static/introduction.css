@@ -8,7 +8,6 @@ body {
     overflow-y: scroll;
 }
 /* Hero Section */
-
 .hero-section {
     position: relative;
     background: url('/static/images/background.png') center center / cover no-repeat;

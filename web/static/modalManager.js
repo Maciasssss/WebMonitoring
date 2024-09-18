@@ -53,19 +53,16 @@ class ModalManager {
         $(modalId).fadeIn(200);
         $('body').css('overflow', 'hidden');
 
-        // Close modal on close button click
         $(modalId).find('.close').off('click.modal').on('click.modal', function() {
             ModalManager.closeModal(modalId, callback, false);
         });
 
-        // Close modal on Esc key
         $(document).off('keydown.modal').on('keydown.modal', function(event) {
             if (event.key === "Escape") {
                 ModalManager.closeModal(modalId, callback, false);
             }
         });
 
-        // Close modal when clicking outside the modal content
         $(modalId).off('click.modal').on('click.modal', function(event) {
             if ($(event.target).is(modalId)) {
                 ModalManager.closeModal(modalId, callback, false);
@@ -81,12 +78,10 @@ class ModalManager {
         }
 
         if (isConfirm) {
-            // Yes button for Confirm modal
             $('#customConfirmYesButton').off('click.modal').on('click.modal', function() {
                 ModalManager.closeModal(modalId, callback, true, true);
             });
 
-            // No button for Confirm modal
             $('#customConfirmNoButton').off('click.modal').on('click.modal', function() {
                 ModalManager.closeModal(modalId, callback, true, false);
             });
@@ -100,9 +95,9 @@ class ModalManager {
 
         if (callback && fromButton) {
             if (confirmResult !== null) {
-                callback(confirmResult); // For Confirm modal
+                callback(confirmResult); 
             } else {
-                callback(); // For Alert modal
+                callback(); 
             }
         }
     }

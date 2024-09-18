@@ -1,4 +1,3 @@
-#ip_handler.py
 from scapy.all import IP
 from .packet_handler_strategy import PacketHandlerStrategy
 from datetime import datetime
@@ -12,15 +11,13 @@ class IPHandler(PacketHandlerStrategy):
         if packet.haslayer(IP):
             ip_packet = packet.getlayer(IP)
 
-            # IPv4 specific fields
             src_ip = ip_packet.src
             dst_ip = ip_packet.dst
             ttl = ip_packet.ttl if ip_packet.ttl else "N/A"
-            total_length = ip_packet.len  # Total length of the IP packet
-            fragment_offset = ip_packet.frag  # Fragment offset
-            flags = str(ip_packet.flags)  # Fragmentation flags (e.g., 'DF', 'MF')
+            total_length = ip_packet.len  
+            fragment_offset = ip_packet.frag  
+            flags = str(ip_packet.flags) 
 
-            # Other metadata
             packet_size = len(packet)
             protocol_str = f"IP (TTL: {ttl})"
 
@@ -31,7 +28,6 @@ class IPHandler(PacketHandlerStrategy):
             )
             self.sniffer.ip_count += 1
 
-            # Add packet information to the sniffer's packet info list
             packet_info = {
                 "src_ip": src_ip,
                 "dst_ip": dst_ip,

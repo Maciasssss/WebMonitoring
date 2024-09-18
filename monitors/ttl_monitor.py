@@ -18,6 +18,5 @@ class TTLMonitor(MonitorStrategy):
     def get_metric(self, flow_key):
         flow = self.flows.get(flow_key)
         if flow and flow['ttl_values']:
-            # Return the most recent TTL value (or could calculate average)
             return flow['ttl_values'][-1]
         return 'N/A'

@@ -10,10 +10,10 @@ class HTTPHandler(PacketHandlerStrategy):
         
     def handle_packet(self, packet):
         if packet.haslayer(TCP):
-            if packet.haslayer(Raw):  # For HTTP packets
+            if packet.haslayer(Raw):  
                 payload = packet[Raw].load
                 try:
-                    decoded_payload = payload.decode('utf-8', errors='ignore')  # Ignore decoding errors
+                    decoded_payload = payload.decode('utf-8', errors='ignore')  
                 except UnicodeDecodeError:
                     decoded_payload = ""
 
@@ -23,7 +23,6 @@ class HTTPHandler(PacketHandlerStrategy):
                     src_port = packet[TCP].sport
                     dst_port = packet[TCP].dport
 
-                    # Initialize variables
                     protocol_str = "Unknown HTTP Traffic"
                     http_info = "Unknown HTTP Traffic"
                     http_method = "N/A"
@@ -34,13 +33,13 @@ class HTTPHandler(PacketHandlerStrategy):
 
                     # Check if the packet is an HTTP request
                     if http_method_match:
-                        http_method = http_method_match.group(0)  # Extract the matched HTTP method
+                        http_method = http_method_match.group(0)  
                         protocol_str = "HTTP Request"
                         http_info = f"{http_method} {src_port}->{dst_port}"
                     
                     # Check if the packet is an HTTP response
                     elif http_response_match:
-                        status_code = http_response_match.group(1)  # Extract the status code from HTTP response
+                        status_code = http_response_match.group(1)  
                         protocol_str = "HTTP Response"
                         http_info = f"HTTP/{status_code} {src_port}->{dst_port}"
 
@@ -51,7 +50,6 @@ class HTTPHandler(PacketHandlerStrategy):
                     )
                     self.sniffer.http_count += 1
 
-                    # Add packet information to the sniffer's packet info list
                     packet_info = {
                         "src_ip": src_ip,
                         "dst_ip": dst_ip,
@@ -71,14 +69,13 @@ class HTTPHandler(PacketHandlerStrategy):
                     if len(self.sniffer.packets_info) > 100:
                         self.sniffer.packets_info.pop(0)
 
-            else:  # For HTTPS packets
+            else:  
                 if packet.haslayer(IP):
                     src_ip = packet[IP].src
                     dst_ip = packet[IP].dst
                     src_port = packet[TCP].sport
                     dst_port = packet[TCP].dport
 
-                    # HTTPS usually uses port 443
                     if dst_port == 443 or src_port == 443:
                         protocol_str = "HTTPS Traffic"
                         packet_size = len(packet)
@@ -88,7 +85,6 @@ class HTTPHandler(PacketHandlerStrategy):
                         )
                         self.sniffer.http_count += 1
 
-                        # Add packet information to the sniffer's packet info list
                         packet_info = {
                             "src_ip": src_ip,
                             "dst_ip": dst_ip,
@@ -102,7 +98,7 @@ class HTTPHandler(PacketHandlerStrategy):
                             "protocol": "HTTPS",
                             "identifier": "N/A",
                             "sequence": "N/A",
-                            "HTTP Method": "N/A"  # Since it's encrypted
+                            "HTTP Method": "N/A"  
                         }
                         self.sniffer.packets_info.append(packet_info)
                         if len(self.sniffer.packets_info) > 100:

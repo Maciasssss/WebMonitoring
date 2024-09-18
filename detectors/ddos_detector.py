@@ -1,7 +1,6 @@
 from collections import defaultdict
 from datetime import datetime, timedelta
 from scapy.all import IP
-
 from .detector_strategy import DetectorStrategy
 
 class DDoSDetector(DetectorStrategy):
@@ -14,7 +13,7 @@ class DDoSDetector(DetectorStrategy):
         if packet.haslayer(IP):
             src_ip = packet[IP].src
             dst_port = packet[IP].dport if packet.haslayer('TCP') or packet.haslayer('UDP') else "Multiple"
-            protocol = "IP"  # General IP traffic (could be TCP or UDP)
+            protocol = "IP"  
             timestamp = datetime.now()
 
             # Clean up older packets outside the time window
@@ -22,10 +21,8 @@ class DDoSDetector(DetectorStrategy):
                                          if ts > timestamp - timedelta(seconds=self.time_window)]
             self.packet_count[src_ip].append(timestamp)
 
-            # Check if packet threshold is exceeded (indicating a potential DDoS attack)
             if len(self.packet_count[src_ip]) > self.packet_threshold:
                 severity = "High" if len(self.packet_count[src_ip]) > 2000 else "Medium"
-
                 return {
                     "ip": src_ip,
                     "type": "DDoS_Attack",
@@ -36,4 +33,4 @@ class DDoSDetector(DetectorStrategy):
                     "protocol": protocol,
                     "possible_fixes": "Consider implementing rate limiting, using a web application firewall, or blocking suspicious IPs."
                 }
-        return None  # No alert if no DDoS detected
+        return None  

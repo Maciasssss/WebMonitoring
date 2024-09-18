@@ -1,4 +1,3 @@
-#packet_sniffer.py
 import threading
 from scapy.all import sniff
 
@@ -30,7 +29,7 @@ from monitors.bandwidth_monitor import BandwidthUtilizationMonitor
 
 from utils.packet_capture import PacketCapture
 
-# packet_sniffer.py
+
 class PacketSniffer:
     def __init__(self, config):
         self.config = config
@@ -175,10 +174,8 @@ class PacketSniffer:
             raise ValueError("No valid network interface provided.")
         self.sniffing = True
 
-        # Build the filter string dynamically
         filter_string = self.build_filter_string(self.config.filter_options)
         
-        # Use the filter in sniff
         sniff(iface=self.config.interface, prn=self.handle_packet, store=False,
             filter=filter_string, 
             timeout=self.config.timeout, stop_filter=lambda x: not self.sniffing)

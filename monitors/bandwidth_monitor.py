@@ -4,28 +4,27 @@ from scapy.all import IP
 from .monitor_strategy import MonitorStrategy
 
 class BandwidthUtilizationMonitor(MonitorStrategy):
-    def __init__(self, capacity_bandwidth_bps=1_000_000_000):  # Default is 1 Gbps
+    def __init__(self, capacity_bandwidth_bps=1_000_000_000):  
         # Flow data structure to store total bytes and timestamps
         self.flows = defaultdict(lambda: {
             'total_bytes': 0, 
             'start_time': None, 
             'end_time': None
         })
-        self.capacity_bandwidth_bps = capacity_bandwidth_bps  # Capacity in bits per second
+        self.capacity_bandwidth_bps = capacity_bandwidth_bps  
 
     def monitor_traffic(self, packet):
         if IP in packet:
             src_ip = packet[IP].src
             dst_ip = packet[IP].dst
             flow_key = (src_ip, dst_ip)
-            packet_size = len(packet) * 8  # Convert packet size to bits
+            packet_size = len(packet) * 8  
             timestamp = datetime.now()
 
             # Initialize flow data if this is the first packet for the flow
             if self.flows[flow_key]['start_time'] is None:
                 self.flows[flow_key]['start_time'] = timestamp
 
-            # Update flow data
             self.flows[flow_key]['end_time'] = timestamp
             self.flows[flow_key]['total_bytes'] += packet_size  # Total bytes in bits
 
@@ -34,7 +33,6 @@ class BandwidthUtilizationMonitor(MonitorStrategy):
         if flow['start_time'] and flow['end_time']:
             duration = (flow['end_time'] - flow['start_time']).total_seconds()
             if duration > 0:
-                # Throughput in bits per second
                 throughput_bps = flow['total_bytes'] / duration
                 # Calculate utilization as a percentage of the total bandwidth
                 utilization = (throughput_bps / self.capacity_bandwidth_bps) * 100

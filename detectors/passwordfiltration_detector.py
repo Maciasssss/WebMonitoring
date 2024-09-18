@@ -2,7 +2,6 @@ from datetime import datetime, timedelta
 import re
 from collections import defaultdict
 from scapy.all import IP, TCP, Raw
-
 from .detector_strategy import DetectorStrategy
 
 class PasswordExfiltrationDetector(DetectorStrategy):
@@ -13,11 +12,10 @@ class PasswordExfiltrationDetector(DetectorStrategy):
         if packet.haslayer(IP) and packet.haslayer(TCP) and packet.haslayer(Raw):
             src_ip = packet[IP].src
             dst_ip = packet[IP].dst
-            dst_port = packet[TCP].dport  # Get the destination port for TCP traffic
+            dst_port = packet[TCP].dport  
             protocol = "TCP"
             timestamp = datetime.now()
 
-            # Decode the raw payload to check for password fields in POST data
             payload = packet[Raw].load.decode(errors='ignore')
 
             if "POST" in payload:
@@ -34,12 +32,11 @@ class PasswordExfiltrationDetector(DetectorStrategy):
                                 "type": "Password_Exfiltration",
                                 "details": f"Potential password exfiltration detected: password sent from {src_ip} to {dst_ip}",
                                 "timestamp": timestamp,
-                                "severity": "High",  # Password exfiltration is always a high-severity threat
+                                "severity": "High",  
                                 "port": dst_port,
                                 "protocol": protocol,
                                 "possible_fixes": "Use encryption for sensitive data, monitor traffic for suspicious activity, and consider enabling multi-factor authentication (MFA)."
                             }
                     else:
-                        # Track passwords sent from the source IP to different destination IPs
                         self.sent_passwords[src_ip][password].add(dst_ip)
-        return None  # No alert if no exfiltration is detected
+        return None  

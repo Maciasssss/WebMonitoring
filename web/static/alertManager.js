@@ -36,7 +36,6 @@ class AlertManager {
         if (alertData) {
             let existingAttack = alertData.attacks.find(a => a.ip === alert.ip);
 
-            // Ensure the alert contains all necessary fields
             alert.severity = alert.severity || 'N/A';
             alert.port = alert.port || 'N/A';
             alert.protocol = alert.protocol || 'N/A';
@@ -46,10 +45,10 @@ class AlertManager {
                 existingAttack.counter++;
                 this.updateAlertCounter(existingAttack, alertType);
             } else {
-                alert.counter = 1; // Initialize counter if it's a new attack
+                alert.counter = 1; 
                 alertData.attacks.push(alert);
                 if (alertData.attacks.length === 1) {
-                    this.showCurrentAlert(alertType);  // Show the alert if it's the first one
+                    this.showCurrentAlert(alertType);  
                 }
             }
         }
@@ -65,7 +64,6 @@ class AlertManager {
             const currentAttack = alertData.attacks[currentIndex];
             attackList.empty();
     
-            // Determine severity class
             let severityClass = '';
             if (currentAttack.severity.toLowerCase() === 'high') {
                 severityClass = 'severity-high';
@@ -98,7 +96,6 @@ class AlertManager {
         const alertBox = $(alertData.elementId);
         const currentAttackIndex = alertData.currentIndex;
 
-        // Only update the counter for the currently displayed alert
         if (alertData.attacks[currentAttackIndex].ip === attack.ip) {
             const attackList = alertBox.find('.attack-list');
             const counterElement = attackList.find('.alert-counter');

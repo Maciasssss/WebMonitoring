@@ -1,4 +1,3 @@
-# udp_handler.py
 import socket
 from scapy.all import UDP, IP, Ether
 from .packet_handler_strategy import PacketHandlerStrategy
@@ -36,14 +35,11 @@ class UDPHandler(PacketHandlerStrategy):
                 ip_version = "N/A"
                 ttl = "N/A"
               
-              # Get the interface IP dynamically
             interface_ip = self.get_interface_ip()
 
-            # If the packet is sent from the machine, consider it "sent bytes"
             if src_ip == interface_ip:
                 self.sniffer.total_bytes_sent += len(packet)
             else:
-                # Otherwise, consider it "received bytes"
                 self.sniffer.total_bytes_received += len(packet)
                 
             if ether_header:
@@ -66,7 +62,6 @@ class UDPHandler(PacketHandlerStrategy):
             )
             self.sniffer.udp_count += 1
 
-            # Add packet info
             packet_info = {
                 "src_ip": src_ip,
                 "dst_ip": dst_ip,
