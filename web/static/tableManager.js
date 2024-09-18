@@ -34,7 +34,6 @@ class TableManager {
         });
         this.table.draw(false);
 
-        // Add data-title attributes for responsive design
         this.addDataTitles();
     }
 
