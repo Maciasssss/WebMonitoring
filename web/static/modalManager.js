@@ -13,6 +13,7 @@ class ModalManager {
             <p><strong>Protocol:</strong> ${packet[9]}</p>
             <p><strong>Identifier:</strong> ${packet[10]}</p>
             <p><strong>Sequence:</strong> ${packet[11]}</p>
+            <p><strong>HTTP Info:</strong> ${packet[12]}</p>
         `;
         $('#packetModal .modal-body').html(detailsHtml);
         ModalManager.showModal('#packetModal');

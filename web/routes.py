@@ -25,6 +25,19 @@ def configure_routes(app):
             logging.error(f"Selected interface {selected_friendly_name} not found.")
             return jsonify({"error": "Selected interface not found"}), 400
 
+        # Retrieve the IP address of the selected interface
+        interfaces = SnifferService.get_sniffable_interfaces()
+        selected_interface = next(
+            (iface for iface in interfaces if iface['guid'] == friendly_to_guid[selected_friendly_name]),
+            None
+        )
+
+        if not selected_interface or not selected_interface.get('ip'):
+            logging.error(f"IP address for interface {selected_friendly_name} not found.")
+            return jsonify({"error": "IP address for selected interface not found"}), 400
+
+        interface_ip = selected_interface['ip']
+
         timeout = int(request.form['timeout'])
         capture_file = request.form.get('capture_file')
 
@@ -45,7 +58,7 @@ def configure_routes(app):
         }
 
         try:
-            sniffer_service.start_sniffer(interface_guid, timeout, capture_file, filter_options)
+            sniffer_service.start_sniffer(interface_guid,interface_ip, timeout, capture_file, filter_options)
             return jsonify({"status": "Packet sniffer started successfully!"}), 200
         except Exception as e:
             logging.error(f"Error starting sniffer: {str(e)}")

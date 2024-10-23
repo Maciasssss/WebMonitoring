@@ -14,7 +14,6 @@ from sniffers.arp_handler import ARPHandler
 from sniffers.icmp_handler import ICMPHandler
 from sniffers.tcp_handler import TCPHandler
 from sniffers.udp_handler import UDPHandler
-from sniffers.http_handler import HTTPHandler
 from sniffers.dns_handler import DNSHandler
 from sniffers.ip_handler import IPHandler
 from sniffers.ipv6_handler import IPv6Handler
@@ -34,12 +33,12 @@ class PacketSniffer:
     def __init__(self, config):
         self.config = config
         self.packets_info = [] 
+        self.interface_ip = config.interface_ip
         self.handlers = {
             "ARP": ARPHandler(self),
             "ICMP": ICMPHandler(self),
             "TCP": TCPHandler(self),
             "UDP": UDPHandler(self),
-            "HTTP": HTTPHandler(self),
             "DNS": DNSHandler(self),
             "IP": IPHandler(self),
             "IPv6": IPv6Handler(self)
@@ -88,7 +87,6 @@ class PacketSniffer:
                 return
             for handler in self.handlers.values():
                 handler.handle_packet(packet)
-            
             for detector_key, detector in self.detectors.items():
                 alert = detector.monitor_traffic(packet)
                 if alert:
@@ -96,10 +94,10 @@ class PacketSniffer:
 
                 for monitor in self.monitors.values():
                  monitor.monitor_traffic(packet)
-                self.total_packets += 1
-                self.packet_capture.start_capture(self.packets_info)
-                self.update_statistics()
-                pass
+            self.packet_capture.start_capture(self.packets_info)
+            self.update_statistics()
+            self.total_packets += 1
+            pass
 
     def get_flow_statistics(self):
         flow_stats = self.get_flow_stats()

@@ -26,17 +26,6 @@ class TableManager {
         });
     }
 
-    updateTable(data, rowMapper) {
-        this.table.clear();
-        data.forEach(item => {
-            const rowData = rowMapper(item);
-            this.table.row.add(rowData);
-        });
-        this.table.draw(false);
-
-        this.addDataTitles();
-    }
-
     addDataTitles() {
         const headers = this.columns.map(col => col.title);
         this.tableElement.find('tbody tr').each((index, row) => {
@@ -99,7 +88,8 @@ class PacketTableManager extends TableManager {
             packet.passing_time || 'N/A',
             packet.protocol || 'N/A',
             packet.identifier || 'N/A',
-            packet.sequence || 'N/A'
+            packet.sequence || 'N/A',
+            packet.http_info || 'N/A'
         ]);
 
         $('#packetTable tbody').off('click').on('click', 'tr', (event) => {

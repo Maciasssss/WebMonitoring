@@ -5,29 +5,25 @@ from scapy.all import IP
 
 class JitterMonitor(MonitorStrategy):
     def __init__(self):
-        self.flows = defaultdict(lambda: {'packets': []})
+        self.flows = defaultdict(lambda: {'last_timestamp': None, 'last_delay': 0, 'jitter': 0})
 
     def monitor_traffic(self, packet):
-     if IP in packet:
-        src_ip = packet[IP].src
-        dst_ip = packet[IP].dst
-        flow_key = (src_ip, dst_ip)
-        timestamp = datetime.now()
-        self.flows[flow_key]['packets'].append(timestamp)
+        if IP in packet:
+            src_ip = packet[IP].src
+            dst_ip = packet[IP].dst
+            flow_key = (src_ip, dst_ip)
+            timestamp = datetime.now()
+
+            flow = self.flows[flow_key]
+            if flow['last_timestamp'] is not None:
+                delay = (timestamp - flow['last_timestamp']).total_seconds() * 1000  # ms
+                delay_variation = delay - flow['last_delay']
+                flow['jitter'] += (abs(delay_variation) - flow['jitter']) / 16
+                flow['last_delay'] = delay
+            else:
+                flow['last_delay'] = 0
+            flow['last_timestamp'] = timestamp
 
     def get_metric(self, flow_key):
         flow = self.flows[flow_key]
-        if len(flow['packets']) < 2:
-            return 0
-
-        delays = []
-        previous_packet_time = flow['packets'][0]
-        for packet_time in flow['packets'][1:]:
-            delay = (packet_time - previous_packet_time).total_seconds() * 1000  # ms
-            delays.append(delay)
-            previous_packet_time = packet_time
-
-        if len(delays) > 1:
-            avg_delay = sum(delays) / len(delays)
-            return sum((d - avg_delay) ** 2 for d in delays) / len(delays)
-        return 0
+        return flow.get('jitter', 0)

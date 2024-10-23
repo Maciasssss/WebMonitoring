@@ -1,4 +1,4 @@
-from scapy.all import IP
+from scapy.all import IP,UDP,DNS,TCP
 from .packet_handler_strategy import PacketHandlerStrategy
 from datetime import datetime
 from colorama import Fore, Style
@@ -8,6 +8,9 @@ class IPHandler(PacketHandlerStrategy):
         self.sniffer = sniffer
 
     def handle_packet(self, packet):
+        if packet.haslayer(UDP) and packet.haslayer(DNS) and packet.haslayer(TCP):
+            return  
+
         if packet.haslayer(IP):
             ip_packet = packet.getlayer(IP)
 
@@ -59,7 +62,7 @@ class IPHandler(PacketHandlerStrategy):
         print(f"{Fore.GREEN}IP Version     :{Style.RESET_ALL} {ip_version}")
         print(f"{Fore.GREEN}TTL            :{Style.RESET_ALL} {ttl}")
         print(f"{Fore.GREEN}Checksum       :{Style.RESET_ALL} {checksum}")
-        print(f"{Fore.GREEN}Packet Size    :{Style.RESET_ALL} {packet_size} bytes")
+        print(f"{Fore.GREEN}Packet Size    :{Style.RESET_ALL} {packet_size}")
         print(f"{Fore.GREEN}Passing Time   :{Style.RESET_ALL} {timestamp}")
         print(f"{Fore.GREEN}Protocol       :{Style.RESET_ALL} {protocol_str}")
         print(f"{Fore.GREEN}Identifier     :{Style.RESET_ALL} {identifier}")

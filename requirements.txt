@@ -1,8 +1,6 @@
 Flask==2.0.1
-Flask-SocketIO==5.1.0
 eventlet==0.31.0  # Required for WebSockets with Flask-SocketIO
 scapy==2.4.5
-chart.js==2.9.4  # Required for chart rendering (in the front end, though)
 Jinja2==3.0.1  # Flask uses Jinja2 for templating
 python-dotenv==0.19.0  
 gevent==21.1.2  # For Flask-SocketIO 

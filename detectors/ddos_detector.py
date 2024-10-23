@@ -16,7 +16,6 @@ class DDoSDetector(DetectorStrategy):
             protocol = "IP"  
             timestamp = datetime.now()
 
-            # Clean up older packets outside the time window
             self.packet_count[src_ip] = [ts for ts in self.packet_count[src_ip]
                                          if ts > timestamp - timedelta(seconds=self.time_window)]
             self.packet_count[src_ip].append(timestamp)
